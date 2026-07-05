@@ -72,21 +72,18 @@
     }
   }
 
-  /* ---------- 공통 레이아웃: 상단 STEP 진행바 + 카드 ------------------ */
+  /* ---------- 공통 레이아웃: 상단 진행 점 + 카드(STEP 배지 + 제목) ----- */
+  // 상단 좌측의 작은 진행 표시 (보조용 — 현재 단계만 진한 파랑).
+  // STEP 클릭 이동(stepNavigationEnabled)은 그대로 유지.
   function buildTopBar(step) {
     var wrap = div('top-bar');
-
-    var badge = div('step-badge');
-    badge.textContent = CFG.texts.step;   // "STEP"
-    wrap.appendChild(badge);
-
-    var nums = div('step-numbers');
+    var dots = div('step-dots');
     var navOn = CFG.options.stepNavigationEnabled;
     for (var i = 1; i <= TOTAL_STEPS; i++) {
-      var cls = 'step-num' + (i < step ? ' is-done' : (i === step ? ' is-current' : ''));
+      var cls = 'step-dot' + (i < step ? ' is-done' : (i === step ? ' is-current' : ''));
       var n;
       if (navOn) {
-        // 클릭 가능한 버튼 (해당 장면으로 즉시 이동)
+        // 작지만 클릭 가능한 버튼 (해당 장면으로 즉시 이동)
         n = document.createElement('button');
         n.className = cls + ' is-clickable';
         n.addEventListener('click', (function (target) {
@@ -98,26 +95,27 @@
       } else {
         n = div(cls);
       }
-      n.textContent = i;
-      nums.appendChild(n);
+      n.title = CFG.texts.step + ' ' + i;   // 툴팁으로 번호 안내
+      dots.appendChild(n);
     }
-    wrap.appendChild(nums);
-
-    var bar = div('progress-bar');
-    var pf = div('pfill');
-    pf.style.width = (step / TOTAL_STEPS * 100) + '%';
-    bar.appendChild(pf);
-    wrap.appendChild(bar);
+    wrap.appendChild(dots);
     return wrap;
   }
 
-  // el 에 상단바 + 카드(제목 + 본문) 구성
-  function shell(el, step, title, buildBody) {
+  // el 에 상단 점 + 카드(STEP 배지 + 제목 + 본문) 구성
+  // titleMod: 'warn' 등 제목 스타일 변형 (선택)
+  function shell(el, step, title, buildBody, titleMod) {
     el.appendChild(buildTopBar(step));
 
     var card = div('scene-card');
+
+    // 현재 장면의 STEP 배지 (카드 상단 중앙, 파란 배지·흰 글씨)
+    var chip = div('step-chip');
+    chip.textContent = CFG.texts.step + ' ' + step;
+    card.appendChild(chip);
+
     if (title) {
-      var t = div('card-title');
+      var t = div('card-title' + (titleMod ? ' is-' + titleMod : ''));
       t.textContent = title;
       card.appendChild(t);
     }
@@ -137,7 +135,8 @@
     updateCtrlButtons();
     toggleChrome(false);
     showScreen(function (el) {
-      shell(el, 1, CFG.texts.gate.step, function (body) {
+      // 카드 제목 없이 STEP 1 배지 + 게이트 문구(gate-title)로 구성
+      shell(el, 1, '', function (body) {
         var title = div('gate-title');
         title.textContent = CFG.texts.gate.title;
 
@@ -213,13 +212,14 @@
 
   /* ---------- 타입별 렌더러 ------------------------------------------ */
   var RENDERERS = {
-    mission: renderMission,
-    message: renderMessage,
+    mission: renderMission,     // (보존 — 현재 흐름 미사용)
+    message: renderMessage,     // (보존 — 현재 흐름 미사용)
     reaction: renderReaction,
     drag: renderDrag,
+    warning: renderWarning,
     closeup: renderCloseup,
     brand: renderBrand,
-    success: renderSuccess,
+    success: renderSuccess,     // (보존 — 엔딩에 통합됨)
     ending: renderEnding,
   };
 
@@ -265,7 +265,7 @@
     });
   }
 
-  // 아이 반응 (울상/미소)
+  // 아이 반응 (울상/미소) — 제목은 카드 상단(card-title)에서 표시
   function renderReaction(scene, step) {
     showScreen(function (el) {
       shell(el, step, scene.title, function (body) {
@@ -284,12 +284,34 @@
         if (scene.sparkle) addSparkles(stage, 7);
 
         stage.appendChild(childBody);
-        body.appendChild(C.createMent(scene.text));
         body.appendChild(stage);
         body.appendChild(makeHint(CFG.texts.hints.tapNext));
       });
       tapAdvance(el);
       setTimer(next, CFG.timings.inspectAutoAdvance);
+    });
+  }
+
+  // 민감도 100% 경고 (게이지 100% 고정 + 경고등 + 울상)
+  function renderWarning(scene, step) {
+    showScreen(function (el) {
+      shell(el, step, scene.title, function (body) {
+        var gauge = buildGauge('rise');
+        gauge.set(1);                       // 100% — 경고등/흔들림 자동 발동
+        body.appendChild(gauge.el);
+
+        var stage = div('stage');
+        var childBody = C.createAsset({
+          src: CFG.assets.childSad, label: CFG.placeholders.childSad,
+          shape: 'baby', variant: 'sad', className: 'child-body is-distress',
+        });
+        addIrritations(childBody, 6);
+        stage.appendChild(childBody);
+        body.appendChild(stage);
+        body.appendChild(makeHint(CFG.texts.hints.tapNext));
+      }, 'warn');
+      tapAdvance(el);
+      setTimer(next, CFG.timings.warningHold + 800);
     });
   }
 
@@ -336,9 +358,20 @@
 
         stage.appendChild(childBody);
         stage.appendChild(tool);
+        body.appendChild(makeHint(scene.hint));   // 보조문구 (제목 아래)
         body.appendChild(stage);
-        body.appendChild(C.createMent(scene.text));
-        body.appendChild(makeHint(scene.hint));
+
+        // POINT! 안내 박스 (esloUse 등 scene.point 가 있을 때)
+        if (scene.point) {
+          var pb = div('point-box');
+          var pbT = div('pb-title');
+          pbT.textContent = CFG.texts.scenes.pointTitle;
+          var pbB = div('pb-body');
+          pbB.textContent = scene.point;
+          pb.appendChild(pbT);
+          pb.appendChild(pbB);
+          body.appendChild(pb);
+        }
 
         function applyGauge(r) {
           if (!gauge) return 0;
@@ -368,8 +401,8 @@
             if (scene.surfactant && isRinse) washSurfactants(surfEls, 1);
 
             // requireGaugeZero: 게이지가 0%인지 확인한 뒤에만 다음 단계로
-            var proceed = function () { setTimer(next, mode === 'rise' ? CFG.timings.warningHold
-                                                    : mode === 'fall' ? CFG.timings.calmHold
+            // (rise 완료 후엔 별도 '경고' 장면(STEP 4)이 이어지므로 짧게만 멈춤)
+            var proceed = function () { setTimer(next, mode === 'fall' ? CFG.timings.calmHold
                                                     : CFG.timings.completePause); };
             if (scene.requireGaugeZero && state.irritation > CFG.gauge.calmThreshold) {
               state.irritation = 0;
@@ -383,7 +416,7 @@
     });
   }
 
-  // 피부 클로즈업 (돋보기 없이 확대 패널)
+  // 피부 클로즈업 — 제목은 카드 상단에서 표시
   function renderCloseup(scene, step) {
     showScreen(function (el) {
       shell(el, step, scene.title, function (body) {
@@ -392,7 +425,6 @@
         if (scene.surfactant) addSurfactants(panel, 6);
 
         body.appendChild(panel);
-        body.appendChild(C.createMent(scene.text));
         body.appendChild(makeHint(CFG.texts.hints.tapNext));
       });
       tapAdvance(el);
@@ -400,12 +432,10 @@
     });
   }
 
-  // eslo는 달라요 (제품 + 키워드)
+  // 이슬로는 달라요 (제품 + 키워드) — 제목은 카드 상단에서 표시
   function renderBrand(scene, step) {
     showScreen(function (el) {
       shell(el, step, scene.title, function (body) {
-        body.appendChild(C.createMent(scene.text, true));
-
         var product = C.createAsset({
           src: CFG.assets.products.eslo, label: CFG.placeholders.eslo,
           shape: 'eslo', className: 'brand-product',
@@ -451,28 +481,44 @@
     });
   }
 
-  // 엔딩
+  // 엔딩 — 깨끗해진 피부(웃는 아이+반짝임) + 이슬로 베이비 3종 (성공 연출 통합)
   function renderEnding(scene, step) {
     showScreen(function (el) {
       shell(el, step, scene.title, function (body) {
-        var logo = C.createAsset({ src: CFG.assets.logo, label: CFG.placeholders.logo, shape: 'logo', className: 'ending-logo' });
-        var ment = C.createMent(scene.text);
-
-        var cards = div('cards');
-        cards.appendChild(buildCard(CFG.assets.ending.bath, CFG.placeholders.endBath, 'mint'));
-        cards.appendChild(buildCard(CFG.assets.ending.cleanser, CFG.placeholders.endCleanser, 'blue'));
-        cards.appendChild(buildCard(CFG.assets.ending.lotion, CFG.placeholders.endLotion, 'cream'));
-
         var sub = div('ending-sub');
         sub.textContent = scene.sub || '';
-
-        var replay = C.createButton(CFG.texts.replayButton, renderGate);
-
-        body.appendChild(logo);
-        body.appendChild(ment);
-        body.appendChild(cards);
         body.appendChild(sub);
-        body.appendChild(replay);
+
+        // 웃는 아이 + 반짝임 (미션 성공 느낌)
+        var row = div('ending-row');
+        var stage = div('ending-baby');
+        var childBody = C.createAsset({
+          src: CFG.assets.childHappy, label: CFG.placeholders.childHappy,
+          shape: 'baby', variant: 'happy', className: 'child-body',
+        });
+        addSparkles(stage, 6);
+        stage.appendChild(childBody);
+        row.appendChild(stage);
+
+        // 이슬로 베이비 3종 (로고 + 제품 3개 + 제품명 캡션)
+        var brandBox = div('ending-brand');
+        var logo = C.createAsset({ src: CFG.assets.logo, label: CFG.placeholders.logo, shape: 'logo', className: 'ending-logo' });
+        var brandName = div('ending-brand-name');
+        brandName.textContent = CFG.texts.scenes.endingBrand;
+        var cards = div('cards is-compact');
+        cards.appendChild(buildCard(CFG.assets.ending.bath, CFG.placeholders.endBath, 'mint', false));
+        cards.appendChild(buildCard(CFG.assets.ending.cleanser, CFG.placeholders.endCleanser, 'blue', false));
+        cards.appendChild(buildCard(CFG.assets.ending.lotion, CFG.placeholders.endLotion, 'cream', false));
+        var caption = div('ending-caption');
+        caption.textContent = CFG.texts.scenes.endingProducts;
+        brandBox.appendChild(logo);
+        brandBox.appendChild(brandName);
+        brandBox.appendChild(cards);
+        brandBox.appendChild(caption);
+        row.appendChild(brandBox);
+
+        body.appendChild(row);
+        body.appendChild(C.createButton(CFG.texts.replayButton, renderGate));
       });
     });
   }
@@ -515,7 +561,9 @@
       fillEl.style.background = col;
       percent.textContent = Math.round(ratio * 100) + '%';
       percent.style.color = col;
-      if (ratio >= CFG.gauge.warnThreshold) {
+      // 경고 연출(문구+흔들림+경고등)은 상승(rise) 계열에서만 —
+      // 이슬로 사용(hold)/헹굼(fall)은 100%여도 조용히 표시 (레퍼런스 기준)
+      if (mode === 'rise' && ratio >= CFG.gauge.warnThreshold) {
         wrap.classList.add('is-warning'); wrap.classList.remove('is-calm');
         status.textContent = TG.warn;
       } else if (mode === 'fall' && ratio <= CFG.gauge.calmThreshold) {
@@ -636,13 +684,15 @@
     }
   }
 
-  function buildCard(src, label, variant) {
+  function buildCard(src, label, variant, showName) {
     var card = div('product-card');
     var visual = C.createAsset({ src: src, label: label, shape: 'product', variant: variant, className: 'card-visual' });
-    var name = div('card-name');
-    name.textContent = label;
     card.appendChild(visual);
-    card.appendChild(name);
+    if (showName !== false) {           // 엔딩은 캡션 한 줄로 대체 (개별 이름 생략)
+      var name = div('card-name');
+      name.textContent = label;
+      card.appendChild(name);
+    }
     return card;
   }
 
