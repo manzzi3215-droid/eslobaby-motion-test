@@ -11,6 +11,39 @@
 
 ---
 
+## [v0.4.0-beta] - 2026-07-06
+### 관리자(Admin) 대시보드 + 플레이 분석 추가 (beta 저장소)
+운영자가 게임 현황·데이터를 확인할 수 있는 관리자 페이지 추가. 일반 사용자에게는 노출되지 않으며,
+게임 로직/디자인과 분리되어 동작. 저장은 LocalStorage 기본(Firebase 확장 가능 구조).
+기존 게임 기능(자동진행·컨트롤·페이지 이동·PWA·share.html·GitHub Pages·모바일)은 모두 유지.
+
+### Added
+- **관리자 진입(톱니바퀴)**: 우측 하단에 은은한 설정 아이콘(40×40, 터치 영역 확보, 모든 화면 동일 위치,
+  기본 opacity 0.4). `config.admin.gearEnabled: false` 로 완전 숨김 가능.
+- **관리자 로그인**: 비밀번호 입력(오답 시 안내 문구). 비밀번호는 `config.admin.password` 로 분리.
+- **관리자 대시보드**(`js/admin.js` + `css/admin.css`, 브랜드 톤 유리카드·모바일 카드형):
+  - 플레이 통계: 오늘 플레이 / 전체 플레이 / 완료 수 / 완료율 / 평균 플레이 시간
+  - STEP 퍼널: 게임 시작 → STEP1 → STEP2 → STEP3 → 완료 (단계별 인원 + 완료율 막대)
+  - 화면별 평균 체류시간 (장면별)
+  - 기기(OS) 분포: iPhone / Android / 기타
+  - 최근 오류 로그: 발생 시간 · 화면(STEP) · 메시지 · 기기/브라우저
+  - 새로고침 / 통계 초기화(확인 후)
+- **분석 모듈**(`js/analytics.js`): 세션·퍼널·체류시간·기기·오류를 LocalStorage에 수집.
+  전 구간 try/catch 로 게임에 영향 없음. `save()` 안 `sync()` 훅으로 **추후 Firebase 연동 확장 용이**.
+- game.js 훅(최소): `startGame`(세션 시작)·`renderScene`(장면/퍼널/체류)·`renderGate`(세션 종료).
+  `window.onerror`/`unhandledrejection` 자동 캡처.
+
+### Changed
+- `config.js` 에 `admin` 블록 추가(password/gearEnabled/firebase/title).
+- index.html: `analytics.js`(game 앞)·`admin.js`(game 뒤) + `admin.css` 로드. 기존 로드 순서 보존.
+- PWA precache 에 신규 파일 추가, 캐시 버전 `eslo-game-v0.4.0-beta`.
+
+### 저장 방식
+- **기본: LocalStorage** (`eslo_admin_v1`). 사용 불가 환경(프라이빗 모드 등)에서도 메모리로 게임은 정상.
+- Firebase 미사용. `config.admin.firebase` 설정 시 `analytics.js`의 `sync()` 에서 확장(TODO 주석).
+
+---
+
 ## [v0.3.3-beta] - 2026-07-06
 ### 시놉시스·인터랙션 연출 개선 + 페이지 번호 (beta 저장소)
 STEP 조작 연출을 "거품 + 계면이 동시 생성 → 헹굼 시 잔류/제거"로 재구성해 이슬로의 차별점을

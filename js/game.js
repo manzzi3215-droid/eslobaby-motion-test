@@ -192,6 +192,7 @@
   /* ---------- 게이트: 카카오 채널 추가 -------------------------------- */
   function renderGate() {
     clearScene();
+    if (window.Analytics) window.Analytics.endSession();   // v0.4.0: 진행 중 세션 종료
     index = 0;
     state.irritation = 0;
     paused = false;            // 게이트 복귀 시 자동 진행 상태 초기화
@@ -217,7 +218,11 @@
   }
 
   /* ---------- 진행 제어 --------------------------------------------- */
-  function startGame() { index = 0; state.irritation = 0; renderScene(); }
+  function startGame() {
+    index = 0; state.irritation = 0;
+    if (window.Analytics) window.Analytics.startSession();   // v0.4.0: 플레이 세션 시작
+    renderScene();
+  }
   function next() {
     if (busy) return;
     if (paused) { queuedNext = true; return; }   // 정지 중: 전환을 보류
@@ -290,6 +295,7 @@
     toggleChrome(true);
     var scene = SCENES[index];
     updateCtrlButtons();                 // 다음 버튼 활성/비활성 갱신
+    if (window.Analytics) window.Analytics.enterScene(scene.id, scene.phase);  // v0.4.0: 통계
     // 진행 표시(페이지 점)는 카드 안쪽에서 shell 이 직접 그림 (v0.2.8)
     (RENDERERS[scene.type] || RENDERERS.message)(scene);
   }

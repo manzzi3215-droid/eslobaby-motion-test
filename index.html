@@ -21,18 +21,21 @@
   <link rel="stylesheet" href="css/reset.css" />
   <link rel="stylesheet" href="css/theme.css" />
   <link rel="stylesheet" href="css/game.css" />
+  <link rel="stylesheet" href="css/admin.css" />
 </head>
 <body>
   <!-- 게임이 그려지는 루트 -->
   <div id="app"></div>
 
   <!-- 스크립트 로드 순서 중요:
-       config → components → scenes → interactions → game → main -->
+       config → components → scenes → interactions → analytics → game → admin → main -->
   <script src="config.js"></script>
   <script src="js/components.js"></script>
   <script src="js/scenes.js"></script>
   <script src="js/interactions.js"></script>
+  <script src="js/analytics.js"></script>
   <script src="js/game.js"></script>
+  <script src="js/admin.js"></script>
   <script src="js/main.js"></script>
 
   <!-- PWA 서비스워커 등록 (오프라인 캐싱 — file:// 직접 실행 시엔 조용히 무시) -->

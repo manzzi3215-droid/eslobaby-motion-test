@@ -19,7 +19,7 @@
 window.ESLO_CONFIG = {
   /* --- 프로젝트 메타 --------------------------------------------------- */
   meta: {
-    version: 'v0.3.3-beta',
+    version: 'v0.4.0-beta',
     title: '이슬로(eslo) 베이비 미니게임',
   },
 
@@ -191,5 +191,18 @@ window.ESLO_CONFIG = {
     warnThreshold: 0.98,
     calmThreshold: 0.02,    // 이 값 이하이면 "진정 완료" (0% 취급)
     surfactantCount: 8,
+  },
+
+  /* --- 관리자(Admin) 모드 (v0.4.0-beta) -------------------------------
+   * 운영자용 대시보드. 일반 사용자에게는 노출되지 않습니다.
+   *   password : 관리자 비밀번호 (여기서 쉽게 변경)
+   *   gearEnabled : 우측 하단 톱니바퀴 표시 여부 (false 면 완전 숨김)
+   *   firebase : 추후 Firebase 연동 설정 자리 (null 이면 LocalStorage 사용)
+   * ------------------------------------------------------------------- */
+  admin: {
+    password: 'eslo2024',
+    gearEnabled: true,
+    firebase: null,
+    title: '관리자 대시보드',
   },
 };
