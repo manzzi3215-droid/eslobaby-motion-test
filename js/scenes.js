@@ -2,58 +2,81 @@
  * scenes.js — 장면 "데이터" 정의 (순서/타입/문구/에셋)
  * -----------------------------------------------------------------------------
  * 장면 순서를 바꾸거나 추가/삭제하려면 이 배열만 수정하세요.
- * STEP 번호는 게이트(STEP 1) 다음부터 자동 계산됩니다. (현재 총 10 STEP)
+ *
+ * v0.2.5 구조: Scene(내부 관리용)과 STEP(사용자 표시용)을 분리합니다.
+ *   - STEP은 실제 체험 단계 3개만 존재: STEP1(바디워시) / STEP2(이슬로) / STEP3(샤워)
+ *   - 나머지는 MISSION 화면 · 설명 화면 · MISSION 성공 · 최종 브랜드 화면
+ *   - phase: 상단 진행 표시 위치 (0=MISSION, 1=STEP1, 2=STEP2, 3=STEP3, 4=MISSION 성공!)
+ *   - step : 카드에 표시할 STEP 번호 (1~3, 없으면 배지 미표시)
  *
  * type 종류:
- *   'reaction' : 아이 반응 (mood: 'happy' | 'sad' | 'neutral'), sparkle 반짝임
- *   'drag'     : 도구를 아이 몸으로 드래그 (action: 'foam' | 'rinse')
- *                - gauge: 'rise'(0→100) | 'hold'(고정 100) | 'fall'(100→0)
- *                - surfactant: 계면이 표시(rinse면 씻겨나감) / weaken: 문지르면 약해짐
- *                - requireGaugeZero: 게이지 0% 확인 후에만 완료
- *                - point: POINT! 안내 박스 문구
- *   'warning'  : 민감도 100% 경고 연출 (게이지 100% + 경고등 + 울상)
- *   'closeup'  : 피부 클로즈업 (skin: 'irritated'), surfactant: 계면이 노출
- *   'brand'    : 이슬로 제품 + 핵심 키워드
- *   'ending'   : 깨끗한 피부 + 이슬로 베이비 3종 + 다시하기 (성공 연출 통합)
- *   (보존: 'mission' | 'message' | 'success' — 현재 흐름 미사용)
+ *   'missionIntro'   : MISSION 인트로 (배지 + 문구)
+ *   'drag'           : 도구를 아이 몸으로 드래그 (action: 'foam' | 'rinse')
+ *                      - gauge: 'rise' | 'hold' | 'fall'
+ *                      - gaugeFrom/gaugeTo: 게이지 시작/목표값 (0~1)
+ *                      - surfactantFrom/surfactantTo: 계면이 잔량 비율 (0~1)
+ *                      - requireGaugeZero: 게이지 0% 확인 후에만 완료
+ *   'warning'        : 민감도 100% 경고 연출 (게이지 100% + 경고등 + 울상)
+ *   'closeup'        : 피부 클로즈업 (skin: 'irritated'), surfactant: 계면이 노출
+ *   'brand'          : 이슬로 제품 + 핵심 키워드
+ *   'missionSuccess' : MISSION 성공! (웃는 아이 + 반짝임)
+ *   'brandFinal'     : 최종 브랜드 페이지 (제품 3종 + 문구 + 다시하기)
+ *   (보존: 'mission' | 'message' | 'reaction' | 'success' | 'ending' — 현재 흐름 미사용)
  * ========================================================================== */
 (function () {
   'use strict';
   var T = window.ESLO_CONFIG.texts;
 
   window.ESLO_SCENES = [
-    // STEP 2 — 오프닝
-    { id: 'opening', type: 'reaction', title: T.scenes.opening, mood: 'happy' },
+    // 장면 ② — MISSION
+    { id: 'missionIntro', type: 'missionIntro', phase: 0,
+      title: T.scenes.missionIntro },
 
-    // STEP 3 — 일반 바디워시 사용 (게이지 0→100)
-    { id: 'bodywashUse', type: 'drag', title: T.scenes.bodywashUse,
-      tool: 'bodywash', action: 'foam', hint: T.hints.dragWash, gauge: 'rise' },
+    // 장면 ③ — STEP1: 바디워시 사용 (게이지 0% → 100%, 빨강)
+    { id: 'bodywashUse', type: 'drag', phase: 1, step: 1,
+      title: T.scenes.bodywashUse,
+      tool: 'bodywash', action: 'foam', hint: T.hints.dragWash,
+      gauge: 'rise', gaugeFrom: 0, gaugeTo: 1 },
 
-    // STEP 4 — 민감도 100% 경고
-    { id: 'warning', type: 'warning', title: T.scenes.warning },
+    // 장면 ④ — 설명: 민감도 100% 경고 (STEP 배지·제목 없음, 게이지만 유지)
+    { id: 'warning', type: 'warning', phase: 1 },
 
-    // STEP 5 — 왜 그런지 살펴보기 (울상)
-    { id: 'distress', type: 'reaction', title: T.scenes.distress, mood: 'sad' },
+    // 장면 ⑤ — 설명: 나쁜 계면활성제 (피부 클로즈업)
+    { id: 'residue', type: 'closeup', phase: 1,
+      title: T.scenes.residue, skin: 'irritated', surfactant: true },
 
-    // STEP 6 — 나쁜 계면활성제 확인 (피부 클로즈업)
-    { id: 'residue', type: 'closeup', title: T.scenes.residue,
-      skin: 'irritated', surfactant: true },
+    // 장면 ⑥ — 설명: 이슬로 소개 (제품 + 키워드)
+    { id: 'esloIntro', type: 'brand', phase: 2,
+      title: T.scenes.esloIntro, keywords: T.esloKeywords },
 
-    // STEP 7 — 이슬로는 달라요 (제품 + 키워드)
-    { id: 'transition', type: 'brand', title: T.scenes.transition,
-      keywords: T.esloKeywords },
-
-    // STEP 8 — 이슬로 바디 제품 사용 (계면이 붙은 채 시작, 게이지 100% 유지)
-    { id: 'esloUse', type: 'drag', title: T.scenes.esloUse,
+    // 장면 ⑦ — STEP2: 이슬로 사용 (게이지 100% → 50% 주황, 계면이 절반 제거)
+    { id: 'esloUse', type: 'drag', phase: 2, step: 2,
+      title: T.scenes.esloUse,
       tool: 'eslo', action: 'foam', hint: T.hints.dragWashEslo,
-      gauge: 'hold', surfactant: true, weaken: true, point: T.scenes.point },
+      gauge: 'fall', gaugeFrom: 1, gaugeTo: 0.5,
+      surfactant: true, surfactantFrom: 1, surfactantTo: 0.5 },
 
-    // STEP 9 — 샤워기로 헹구기 (계면이 씻김 + 게이지 100→0)
-    { id: 'esloRinse', type: 'drag', title: T.scenes.esloRinse,
+    // 장면 ⑧ — STEP3: 샤워 (게이지 50% → 0% 파랑, 계면이 모두 제거)
+    { id: 'esloRinse', type: 'drag', phase: 3, step: 3,
+      title: T.scenes.esloRinse,
       tool: 'shower', action: 'rinse', hint: T.hints.dragRinse,
-      gauge: 'fall', surfactant: true, requireGaugeZero: true },
+      gauge: 'fall', gaugeFrom: 0.5, gaugeTo: 0,
+      surfactant: true, surfactantFrom: 0.5, surfactantTo: 0,
+      requireGaugeZero: true },
 
-    // STEP 10 — 깨끗해진 피부 + 이슬로 베이비 3종 엔딩 (성공 연출 통합)
-    { id: 'ending', type: 'ending', title: T.scenes.ending, sub: T.scenes.endingSub },
+    // 장면 ⑨ — MISSION 성공! (웃는 아이 + 반짝임, 제품 이미지 없음)
+    { id: 'missionSuccess', type: 'missionSuccess', phase: 4,
+      title: T.scenes.missionSuccess },
+
+    // 장면 ⑩ — 최종 브랜드 페이지 (제품 3종 + 문구 + 다시하기)
+    { id: 'brandFinal', type: 'brandFinal', phase: 4,
+      title: T.scenes.brandFinalTitle, desc: T.scenes.brandFinalDesc },
   ];
+
+  /* (v0.2.4 이전 장면 구성 — 복구 대비 참고용 보존)
+   * opening(reaction) → bodywashUse(rise) → warning → distress(reaction,sad)
+   * → residue(closeup) → transition(brand) → esloUse(hold+weaken+point)
+   * → esloRinse(fall+requireGaugeZero) → ending(3종 통합)
+   * ※ v0.2.5에서 opening → missionIntro 로 대체, distress 장면 제거,
+   *   ending → missionSuccess + brandFinal 두 장면으로 분리 */
 })();

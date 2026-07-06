@@ -72,47 +72,63 @@
     }
   }
 
-  /* ---------- 공통 레이아웃: 상단 진행 점 + 카드(STEP 배지 + 제목) ----- */
-  // 상단 좌측의 작은 진행 표시 (보조용 — 현재 단계만 진한 파랑).
-  // STEP 클릭 이동(stepNavigationEnabled)은 그대로 유지.
-  function buildTopBar(step) {
+  /* ---------- 공통 레이아웃: 상단 진행 표시 + 카드(STEP 배지 + 제목) ----- */
+  // v0.2.5 — 상단 진행 표시는 MISSION → STEP1 → STEP2 → STEP3 → MISSION 성공!
+  // 5개 항목으로 표시. 현재 진행 위치만 활성화, 나머지는 비활성.
+  // 클릭 시 해당 구간의 첫 장면으로 이동 (stepNavigationEnabled 잠금 유지).
+  var PHASES = CFG.texts.phases;
+
+  // 각 phase 가 시작되는 장면 index (클릭 이동용)
+  function firstSceneOfPhase(p) {
+    for (var i = 0; i < SCENES.length; i++) {
+      if (SCENES[i].phase === p) return i;
+    }
+    return 0;
+  }
+
+  function buildTopBar(phase) {
     var wrap = div('top-bar');
-    var dots = div('step-dots');
+    var list = div('phase-list');
     var navOn = CFG.options.stepNavigationEnabled;
-    for (var i = 1; i <= TOTAL_STEPS; i++) {
-      var cls = 'step-dot' + (i < step ? ' is-done' : (i === step ? ' is-current' : ''));
+    for (var i = 0; i < PHASES.length; i++) {
+      var cls = 'phase-item' + (i === phase ? ' is-current' : '');
       var n;
       if (navOn) {
-        // 작지만 클릭 가능한 버튼 (해당 장면으로 즉시 이동)
+        // 클릭 가능한 버튼 (해당 구간 첫 장면으로 즉시 이동)
         n = document.createElement('button');
         n.className = cls + ' is-clickable';
         n.addEventListener('click', (function (target) {
           return function (e) {
             e.stopPropagation();          // 탭-진행(tapAdvance)과 충돌 방지
-            goToStep(target);
+            goToStep(firstSceneOfPhase(target) + 2);
           };
         })(i));
       } else {
         n = div(cls);
       }
-      n.title = CFG.texts.step + ' ' + i;   // 툴팁으로 번호 안내
-      dots.appendChild(n);
+      n.textContent = PHASES[i];
+      list.appendChild(n);
     }
-    wrap.appendChild(dots);
+    wrap.appendChild(list);
     return wrap;
   }
 
-  // el 에 상단 점 + 카드(STEP 배지 + 제목 + 본문) 구성
-  // titleMod: 'warn' 등 제목 스타일 변형 (선택)
-  function shell(el, step, title, buildBody, titleMod) {
-    el.appendChild(buildTopBar(step));
+  // el 에 상단 진행 표시 + 카드(STEP 배지 + 제목 + 본문) 구성
+  //   opts.phase : 상단 진행 표시 위치 (null 이면 진행 표시 숨김 — 게이트)
+  //   opts.step  : 카드 상단 STEP 배지 번호 (1~3, 없으면 배지 미표시)
+  //   titleMod   : 'warn' 등 제목 스타일 변형 (선택)
+  function shell(el, opts, title, buildBody, titleMod) {
+    opts = opts || {};
+    if (opts.phase != null) el.appendChild(buildTopBar(opts.phase));
 
     var card = div('scene-card');
 
-    // 현재 장면의 STEP 배지 (카드 상단 중앙, 파란 배지·흰 글씨)
-    var chip = div('step-chip');
-    chip.textContent = CFG.texts.step + ' ' + step;
-    card.appendChild(chip);
+    // 현재 장면의 STEP 배지 — 실제 체험 단계(STEP1~3)에만 표시
+    if (opts.step != null) {
+      var chip = div('step-chip');
+      chip.textContent = CFG.texts.step + opts.step;   // "STEP1" 표기
+      card.appendChild(chip);
+    }
 
     if (title) {
       var t = div('card-title' + (titleMod ? ' is-' + titleMod : ''));
@@ -135,21 +151,18 @@
     updateCtrlButtons();
     toggleChrome(false);
     showScreen(function (el) {
-      // 카드 제목 없이 STEP 1 배지 + 게이트 문구(gate-title)로 구성
-      shell(el, 1, '', function (body) {
+      // v0.2.5: STEP 배지·진행 표시 없이 게이트 문구(gate-title) + QR + 버튼만 구성
+      // (안내문(gate.desc)은 config 에 보존 — 표시만 제외)
+      shell(el, {}, '', function (body) {
         var title = div('gate-title');
         title.textContent = CFG.texts.gate.title;
 
         var qr = C.createAsset({ src: CFG.assets.qr, label: CFG.placeholders.qr, shape: 'qr', className: 'qr-box' });
 
-        var desc = div('gate-desc');
-        desc.textContent = CFG.texts.gate.desc;
-
         var btn = C.createButton(CFG.texts.gate.button, startGame);
 
         body.appendChild(title);
         body.appendChild(qr);
-        body.appendChild(desc);
         body.appendChild(btn);
       });
     });
@@ -183,22 +196,26 @@
     if (pauseBtn) pauseBtn.classList.toggle('is-active', paused);
   }
 
-  // 대상 장면 시작 시점의 게이지 값을 계산 (rise 이후=100%, fall 이후=0%)
+  // 대상 장면 시작 시점의 게이지 값을 계산
+  // (각 게이지 장면의 목표값(gaugeTo)을 순서대로 반영: rise 이후=100%,
+  //  STEP2 이후=50%, STEP3 이후=0%)
   function irritationForIndex(target) {
     var irr = 0;
     for (var i = 0; i < target; i++) {
-      if (SCENES[i].gauge === 'rise') irr = 1;
-      else if (SCENES[i].gauge === 'fall') irr = 0;
+      var sc = SCENES[i];
+      if (sc.gauge === 'rise') irr = (sc.gaugeTo != null ? sc.gaugeTo : 1);
+      else if (sc.gauge === 'fall') irr = (sc.gaugeTo != null ? sc.gaugeTo : 0);
     }
     return irr;
   }
 
-  // STEP 번호 클릭 이동 (테스트/시연용, config.options.stepNavigationEnabled)
+  // 장면 이동 (테스트/시연용, config.options.stepNavigationEnabled)
+  // step: 1=게이트, 2~=장면 순서 (내부 Scene 번호 — 사용자 표시 STEP1~3과 별개)
   function goToStep(step) {
     clearScene();
     queuedNext = false;
     if (step <= 1) { renderGate(); return; }
-    index = step - 2;
+    index = Math.min(step - 2, SCENES.length - 1);
     state.irritation = irritationForIndex(index);
     renderScene();
   }
@@ -207,26 +224,103 @@
     clearScene();
     toggleChrome(true);
     var scene = SCENES[index];
-    (RENDERERS[scene.type] || RENDERERS.message)(scene, index + 2);   // step = index+2
+    (RENDERERS[scene.type] || RENDERERS.message)(scene);
   }
 
   /* ---------- 타입별 렌더러 ------------------------------------------ */
   var RENDERERS = {
-    mission: renderMission,     // (보존 — 현재 흐름 미사용)
-    message: renderMessage,     // (보존 — 현재 흐름 미사용)
-    reaction: renderReaction,
+    missionIntro: renderMissionIntro,       // v0.2.5 — MISSION 인트로
     drag: renderDrag,
     warning: renderWarning,
     closeup: renderCloseup,
     brand: renderBrand,
-    success: renderSuccess,     // (보존 — 엔딩에 통합됨)
-    ending: renderEnding,
+    missionSuccess: renderMissionSuccess,   // v0.2.5 — MISSION 성공!
+    brandFinal: renderBrandFinal,           // v0.2.5 — 최종 브랜드 페이지
+    mission: renderMission,     // (보존 — 현재 흐름 미사용)
+    message: renderMessage,     // (보존 — 현재 흐름 미사용)
+    reaction: renderReaction,   // (보존 — 현재 흐름 미사용)
+    success: renderSuccess,     // (보존 — 현재 흐름 미사용)
+    ending: renderEnding,       // (보존 — 현재 흐름 미사용)
   };
 
-  // 오프닝 + 오늘의 미션
-  function renderMission(scene, step) {
+  // MISSION 인트로 (v0.2.5) — MISSION 배지 + 미션 문구
+  function renderMissionIntro(scene) {
     showScreen(function (el) {
-      shell(el, step, scene.title, function (body) {
+      shell(el, scene, '', function (body) {
+        var badge = div('mission-badge');
+        badge.textContent = PHASES[0];              // "MISSION"
+
+        var goal = div('mission-goal');
+        goal.textContent = scene.title;
+
+        body.appendChild(badge);
+        body.appendChild(goal);
+        body.appendChild(makeHint(CFG.texts.hints.tapNext));
+      });
+      tapAdvance(el);
+      setTimer(next, CFG.timings.missionAutoAdvance);
+    });
+  }
+
+  // MISSION 성공! (v0.2.5) — 웃는 아이 + 반짝임 (제품 이미지 없음)
+  function renderMissionSuccess(scene) {
+    showScreen(function (el) {
+      shell(el, scene, '', function (body) {
+        var burst = div('confetti-layer');
+        addConfetti(burst, 26);
+
+        var title = div('success-title');
+        title.textContent = PHASES[4];              // "MISSION 성공!"
+
+        var desc = div('success-desc');
+        desc.textContent = scene.title;
+
+        var stage = div('stage');
+        var childBody = C.createAsset({
+          src: CFG.assets.childHappy, label: CFG.placeholders.childHappy,
+          shape: 'baby', variant: 'happy', className: 'child-body',
+        });
+        addSparkles(stage, 8);
+        stage.appendChild(childBody);
+
+        body.appendChild(burst);
+        body.appendChild(title);
+        body.appendChild(desc);
+        body.appendChild(stage);
+        body.appendChild(makeHint(CFG.texts.hints.tapNext));
+      });
+      tapAdvance(el);
+      setTimer(next, CFG.timings.successHold);
+    });
+  }
+
+  // 최종 브랜드 페이지 (v0.2.5) — 제품 3종 + 브랜드 문구 + 다시하기
+  // (장면 전환은 공통 Fade — showScreen 의 더블 버퍼 페이드 사용)
+  function renderBrandFinal(scene) {
+    showScreen(function (el) {
+      shell(el, scene, scene.title, function (body) {
+        var logo = C.createAsset({ src: CFG.assets.logo, label: CFG.placeholders.logo, shape: 'logo', className: 'ending-logo' });
+
+        var cards = div('cards is-compact');
+        cards.appendChild(buildCard(CFG.assets.ending.bath, CFG.placeholders.endBath, 'mint', false));
+        cards.appendChild(buildCard(CFG.assets.ending.cleanser, CFG.placeholders.endCleanser, 'blue', false));
+        cards.appendChild(buildCard(CFG.assets.ending.lotion, CFG.placeholders.endLotion, 'cream', false));
+
+        var desc = div('ending-sub');
+        desc.textContent = scene.desc || '';
+
+        body.appendChild(logo);
+        body.appendChild(cards);
+        body.appendChild(desc);
+        body.appendChild(C.createButton(CFG.texts.replayButton, renderGate));
+      });
+    });
+  }
+
+  // 오늘의 미션 (보존 — 현재 흐름 미사용)
+  function renderMission(scene) {
+    showScreen(function (el) {
+      shell(el, scene, scene.title, function (body) {
         var badge = div('mission-badge');
         badge.textContent = CFG.texts.mission.badge;
 
@@ -253,10 +347,10 @@
     });
   }
 
-  // 멘트형
-  function renderMessage(scene, step) {
+  // 멘트형 (보존 — 현재 흐름 미사용)
+  function renderMessage(scene) {
     showScreen(function (el) {
-      shell(el, step, scene.title, function (body) {
+      shell(el, scene, scene.title, function (body) {
         body.appendChild(C.createMent(scene.text, scene.strong));
         body.appendChild(makeHint(CFG.texts.hints.tapNext));
       });
@@ -265,10 +359,10 @@
     });
   }
 
-  // 아이 반응 (울상/미소) — 제목은 카드 상단(card-title)에서 표시
-  function renderReaction(scene, step) {
+  // 아이 반응 (울상/미소) — (보존 — 현재 흐름 미사용)
+  function renderReaction(scene) {
     showScreen(function (el) {
-      shell(el, step, scene.title, function (body) {
+      shell(el, scene, scene.title, function (body) {
         var stage = div('stage');
 
         var childSrc = scene.mood === 'sad' ? CFG.assets.childSad :
@@ -292,10 +386,10 @@
     });
   }
 
-  // 민감도 100% 경고 (게이지 100% 고정 + 경고등 + 울상)
-  function renderWarning(scene, step) {
+  // 민감도 100% 경고 — v0.2.5: STEP 배지·제목 없이 게이지(100%)+경고 연출만 표시
+  function renderWarning(scene) {
     showScreen(function (el) {
-      shell(el, step, scene.title, function (body) {
+      shell(el, scene, scene.title, function (body) {
         var gauge = buildGauge('rise');
         gauge.set(1);                       // 100% — 경고등/흔들림 자동 발동
         body.appendChild(gauge.el);
@@ -316,14 +410,21 @@
   }
 
   // 드래그형 (거품 + 게이지 + 계면이)
-  function renderDrag(scene, step) {
+  // v0.2.5 게이지 규칙 — 장면별 gaugeFrom → gaugeTo 로 진행:
+  //   STEP1: 0 → 1 (빨강) / STEP2: 1 → 0.5 (주황) / STEP3: 0.5 → 0 (파랑)
+  function renderDrag(scene) {
     showScreen(function (el) {
-      shell(el, step, scene.title, function (body) {
+      shell(el, scene, scene.title, function (body) {
         var mode = scene.gauge;               // 'rise' | 'hold' | 'fall'
-        var gauge = null, startLevel = 0;
+        var gauge = null, startLevel = 0, endLevel = 0;
         if (mode) {
           gauge = buildGauge(mode);
-          startLevel = mode === 'rise' ? 0 : clamp01(state.irritation || 1);  // hold/fall 은 현재값(100%)에서 시작
+          // 시작값: gaugeFrom 지정 시 그 값, 아니면 rise=0 / hold·fall=현재값(100%)
+          startLevel = scene.gaugeFrom != null ? clamp01(scene.gaugeFrom)
+                     : (mode === 'rise' ? 0 : clamp01(state.irritation || 1));
+          // 목표값: gaugeTo 지정 시 그 값, 아니면 rise=1 / fall=0 / hold=시작값
+          endLevel = scene.gaugeTo != null ? clamp01(scene.gaugeTo)
+                   : (mode === 'rise' ? 1 : (mode === 'fall' ? 0 : startLevel));
           gauge.set(startLevel);
           body.appendChild(gauge.el);
         }
@@ -341,8 +442,21 @@
         var isRinse = scene.action === 'rinse';
         setFoam(bubbles, isRinse ? 1 : 0);
 
+        // 계면이 — surfactantFrom(시작 잔량 비율) 만큼 표시하고,
+        // surfactantTo(목표 잔량 비율) 까지 문지르는 진행도에 따라 씻겨나감
+        //   STEP2: 1 → 0.5 (절반 제거) / STEP3: 0.5 → 0 (모두 제거)
         var surfEls = [];
-        if (scene.surfactant) surfEls = addSurfactants(childBody, CFG.gauge.surfactantCount);
+        var surfFrom = scene.surfactantFrom != null ? clamp01(scene.surfactantFrom) : 1;
+        var surfWashFraction = 0;   // 이번 장면에서 씻어낼 비율 (표시 개수 기준)
+        if (scene.surfactant) {
+          var surfCount = Math.max(1, Math.round(CFG.gauge.surfactantCount * surfFrom));
+          surfEls = addSurfactants(childBody, surfCount);
+          if (scene.surfactantTo != null && surfFrom > 0) {
+            surfWashFraction = clamp01(1 - clamp01(scene.surfactantTo) / surfFrom);
+          } else if (isRinse) {
+            surfWashFraction = 1;   // (구버전 호환: rinse 는 전부 씻겨나감)
+          }
+        }
 
         var meter = div('rub-meter');
         var fill = div('fill');
@@ -375,7 +489,8 @@
 
         function applyGauge(r) {
           if (!gauge) return 0;
-          var level = mode === 'rise' ? r : (mode === 'fall' ? startLevel * (1 - r) : startLevel);
+          // 시작값 → 목표값 사이를 진행도(r)에 따라 보간
+          var level = mode === 'hold' ? startLevel : startLevel + (endLevel - startLevel) * r;
           gauge.set(level);
           if (mode !== 'hold') state.irritation = level;
           return level;
@@ -387,22 +502,23 @@
             fill.style.width = (r * 100) + '%';
             setFoam(bubbles, isRinse ? (1 - r) : r);
             if (scene.weaken) weakenSurfactants(surfEls, r);
-            if (scene.surfactant && isRinse) washSurfactants(surfEls, r);
+            if (surfWashFraction > 0) washSurfactants(surfEls, r * surfWashFraction);
             applyGauge(r);
           },
           onComplete: function () {
-            // 게이지를 목표값으로 확정 (fall → 반드시 0%)
+            // 게이지를 목표값으로 확정 (STEP1→100%, STEP2→50%, STEP3→0%)
             if (gauge) {
-              var end = mode === 'rise' ? 1 : (mode === 'fall' ? 0 : startLevel);
-              gauge.set(end);
-              if (mode !== 'hold') state.irritation = end;
+              gauge.set(endLevel);
+              if (mode !== 'hold') state.irritation = endLevel;
             }
             if (scene.weaken) weakenSurfactants(surfEls, 1);
-            if (scene.surfactant && isRinse) washSurfactants(surfEls, 1);
+            if (surfWashFraction > 0) washSurfactants(surfEls, surfWashFraction);
 
             // requireGaugeZero: 게이지가 0%인지 확인한 뒤에만 다음 단계로
-            // (rise 완료 후엔 별도 '경고' 장면(STEP 4)이 이어지므로 짧게만 멈춤)
-            var proceed = function () { setTimer(next, mode === 'fall' ? CFG.timings.calmHold
+            // ("진정 완료" 연출(calmHold)은 0%까지 내려가는 장면에서만 —
+            //  STEP2 는 50%에서 멈추므로 짧은 완료 대기만)
+            var reachesZero = mode === 'fall' && endLevel <= CFG.gauge.calmThreshold;
+            var proceed = function () { setTimer(next, reachesZero ? CFG.timings.calmHold
                                                     : CFG.timings.completePause); };
             if (scene.requireGaugeZero && state.irritation > CFG.gauge.calmThreshold) {
               state.irritation = 0;
@@ -416,10 +532,10 @@
     });
   }
 
-  // 피부 클로즈업 — 제목은 카드 상단에서 표시
-  function renderCloseup(scene, step) {
+  // 피부 클로즈업 (설명 화면 — STEP 배지 없음)
+  function renderCloseup(scene) {
     showScreen(function (el) {
-      shell(el, step, scene.title, function (body) {
+      shell(el, scene, scene.title, function (body) {
         var panel = div('closeup-panel' + (scene.skin === 'irritated' ? ' is-irritated' : ''));
         addIrritations(panel, 8);
         if (scene.surfactant) addSurfactants(panel, 6);
@@ -432,10 +548,10 @@
     });
   }
 
-  // 이슬로는 달라요 (제품 + 키워드) — 제목은 카드 상단에서 표시
-  function renderBrand(scene, step) {
+  // 이슬로 소개 (제품 + 키워드 — 설명 화면, STEP 배지 없음)
+  function renderBrand(scene) {
     showScreen(function (el) {
-      shell(el, step, scene.title, function (body) {
+      shell(el, scene, scene.title, function (body) {
         var product = C.createAsset({
           src: CFG.assets.products.eslo, label: CFG.placeholders.eslo,
           shape: 'eslo', className: 'brand-product',
@@ -457,10 +573,10 @@
     });
   }
 
-  // 미션 성공 연출
-  function renderSuccess(scene, step) {
+  // 미션 성공 연출 (보존 — 현재 흐름 미사용, missionSuccess 로 대체)
+  function renderSuccess(scene) {
     showScreen(function (el) {
-      shell(el, step, scene.title, function (body) {
+      shell(el, scene, scene.title, function (body) {
         var burst = div('confetti-layer');
         addConfetti(burst, 26);
         addSparkles(burst, 8);
@@ -481,10 +597,10 @@
     });
   }
 
-  // 엔딩 — 깨끗해진 피부(웃는 아이+반짝임) + 이슬로 베이비 3종 (성공 연출 통합)
-  function renderEnding(scene, step) {
+  // 구 엔딩 (보존 — 현재 흐름 미사용, missionSuccess + brandFinal 로 분리)
+  function renderEnding(scene) {
     showScreen(function (el) {
-      shell(el, step, scene.title, function (body) {
+      shell(el, scene, scene.title, function (body) {
         var sub = div('ending-sub');
         sub.textContent = scene.sub || '';
         body.appendChild(sub);

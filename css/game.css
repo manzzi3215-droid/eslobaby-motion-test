@@ -61,7 +61,37 @@ body {
 }
 .screen.is-active { opacity: 1; visibility: visible; }
 
-/* ----- 상단 진행 표시 (v0.2.3: 좌측 작은 점 형태 — 보조 표시) -------- */
+/* ----- 상단 진행 표시 (v0.2.5: MISSION → STEP1 → STEP2 → STEP3 → MISSION 성공!)
+ * 현재 진행 위치만 활성화(진한 파랑), 나머지는 비활성.
+ * 클릭 이동은 config.options.stepNavigationEnabled 로 잠금 가능. ------------- */
+.phase-list {
+  display: flex;
+  align-items: center;
+  gap: clamp(4px, 0.8vw, 8px);
+  flex-wrap: wrap;
+}
+.phase-item {
+  font-family: inherit;
+  font-size: clamp(10px, 1.4vw, 13px);
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  padding: 4px clamp(8px, 1.4vw, 14px);
+  border-radius: 999px;
+  color: #9cc0d8;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid #cfe2f0;
+  white-space: nowrap;
+  transition: background var(--t-fast), color var(--t-fast), transform var(--t-fast);
+}
+.phase-item.is-current {
+  color: var(--color-text-invert);
+  background: var(--color-blue-deep);
+  border-color: var(--color-blue-deep);
+}
+button.phase-item.is-clickable { cursor: pointer; }
+button.phase-item.is-clickable:active { transform: scale(0.92); }
+
+/* ----- (구버전 상단 진행 점 — v0.2.3, 복구 대비 보존) ----------------- */
 .top-bar {
   width: 100%;
   display: flex;
@@ -691,7 +721,10 @@ button.step-num.is-clickable:active { transform: scale(0.9); }
     margin-bottom: 12px;
   }
   .top-bar { width: 100%; padding: 0 2px; }
-  /* 11개 번호가 한 줄에 들어가도록 축소 (시연용 내비게이션) */
+  /* 진행 표시 5개(MISSION~MISSION 성공!)가 한 줄에 들어가도록 축소 */
+  .phase-list { gap: 3px; }
+  .phase-item { font-size: 10px; padding: 3px 7px; letter-spacing: 0.2px; }
+  /* (구버전 번호 내비게이션 — 복구 대비 보존) */
   .step-numbers { gap: 3px; max-width: 100%; }
   .step-num { width: 28px; height: 28px; font-size: 12px; }
 
