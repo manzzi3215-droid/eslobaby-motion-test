@@ -14,7 +14,9 @@
 
 ## 현재 버전
 
-**v0.3.1** (버전은 `config.js`의 `meta.version` 및 `CHANGELOG.md`와 항상 일치시킬 것)
+**v0.3.2-beta** (버전은 `config.js`의 `meta.version` 및 `CHANGELOG.md`와 항상 일치시킬 것)
+※ 이 저장소는 운영본과 분리된 **beta 미러**입니다. STEP 화면 민감도 게이지는 사용자 화면에 미표시
+(내부 로직/`buildGauge`는 유지), 경고 화면은 문구 2줄 + 큰 비상 경고등으로 구성.
 
 ## 실행 방식
 

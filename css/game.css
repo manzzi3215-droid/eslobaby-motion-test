@@ -1077,6 +1077,68 @@ button.pdot.is-clickable:active { transform: scale(0.9); }
 }
 
 /* =============================================================================
+ * ★ v0.3.2-beta — 타이포그래피 정리 + 경고 화면 리뉴얼 (게이지는 JS에서 미표시)
+ *   카드뉴스처럼 읽기 좋게 줄 간격·계층·문단 여백 정리. (원본 뒤 → 우선 적용)
+ * ========================================================================== */
+
+/* ---- 타이포 계층: 제목 / 보조문구 / 안내문 ---- */
+.card-title {
+  line-height: 1.32;                 /* 줄 간격 확대 (기존 1.2) */
+  letter-spacing: -0.4px;
+  margin-bottom: clamp(8px, 1.8vh, 18px);
+  word-break: keep-all;              /* 한글 단어 단위 줄바꿈 (읽기 흐름) */
+}
+.mission-goal {
+  line-height: 1.34;
+  word-break: keep-all;
+  margin-bottom: clamp(4px, 1vh, 10px);
+}
+.ment { line-height: 1.5; word-break: keep-all; }
+.success-desc { line-height: 1.5; word-break: keep-all; }
+.ending-sub { line-height: 1.65; word-break: keep-all; }
+.keyword { line-height: 1.35; }
+.gate-title { line-height: 1.5; word-break: keep-all; }
+.gate-desc { line-height: 1.6; }
+/* 조작 안내 / 보조 문구: 더 작고 차분하게, 위쪽 여백으로 본문과 분리 */
+.hint {
+  font-size: clamp(12px, 1.55vw, 16px);
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--color-text-soft);
+  margin-top: clamp(2px, 0.8vh, 8px);
+  opacity: 0.92;
+}
+/* 본문 요소 사이 호흡 (카드뉴스 문단 여백) */
+.screen-body { gap: clamp(10px, 1.8vh, 20px); }
+
+/* ---- 경고 화면 (v0.3.2): 추가 문구 + 큰 비상 경고등 ---- */
+.warning-sub {
+  font-size: clamp(17px, 2.6vw, 26px);
+  font-weight: 800;
+  line-height: 1.4;
+  color: var(--color-warn);
+  text-align: center;
+  white-space: pre-line;
+  word-break: keep-all;
+  margin-top: -2px;
+  animation: fadeUp 320ms ease both;
+}
+/* 비상 경고등 — 기존보다 크게, 무대 좌하단, 반응형(넘침/잘림 방지) */
+.warning-light.is-big {
+  position: absolute;
+  left: clamp(2px, 2vw, 14px);
+  bottom: clamp(2px, 3vh, 18px);
+  width: clamp(56px, 15vw, 116px);
+  height: clamp(56px, 15vw, 116px);
+  max-width: 40%;
+  opacity: 1;
+  transform: none;
+  z-index: 5;
+  filter: drop-shadow(0 6px 14px rgba(220,70,70,0.35));
+  animation: warnFlash 0.6s ease-in-out infinite;
+}
+
+/* =============================================================================
  * 반응형: 태블릿 가로 / 모바일 / 세로 모드
  * - 가로: 기존 카드 UI 유지
  * - 세로: 위→아래로 흐르는 모바일 게임 UI (필요 시 스크롤 허용)

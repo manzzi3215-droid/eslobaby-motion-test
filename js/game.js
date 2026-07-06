@@ -456,13 +456,14 @@
     });
   }
 
-  // 민감도 100% 경고 — v0.2.5: STEP 배지·제목 없이 게이지(100%)+경고 연출만 표시
+  // 민감도 100% 경고 — v0.3.2: 게이지 제거, 경고 문구 2줄 + 큰 비상 경고등 + 울상 아이
   function renderWarning(scene) {
     showScreen(function (el) {
-      shell(el, scene, scene.title, function (body) {
-        var gauge = buildGauge('rise');
-        gauge.set(1);                       // 100% — 경고등/흔들림 자동 발동
-        body.appendChild(gauge.el);
+      // 메인 경고 문구는 카드 제목(빨강)으로 표시
+      shell(el, scene, CFG.texts.gauge.warn, function (body) {   // 경고! 피부 자극 위험!
+        // 추가 문구
+        var sub = div('warning-sub');
+        sub.textContent = CFG.texts.gauge.warnSub;               // 우리 아이 피부가 불편해요!
 
         var stage = div('stage');
         var childBody = C.createAsset({
@@ -471,6 +472,15 @@
         });
         addIrritations(childBody, 6);
         stage.appendChild(childBody);
+
+        // 비상 경고등 (기존보다 크게, 반응형) — 무대 좌하단
+        var light = C.createAsset({
+          src: CFG.assets.warningLight, label: CFG.placeholders.warningLight,
+          shape: 'siren', className: 'warning-light is-big',
+        });
+        stage.appendChild(light);
+
+        body.appendChild(sub);
         body.appendChild(stage);
         body.appendChild(makeHint(CFG.texts.hints.tapNext));
       }, 'warn');
@@ -496,7 +506,9 @@
           endLevel = scene.gaugeTo != null ? clamp01(scene.gaugeTo)
                    : (mode === 'rise' ? 1 : (mode === 'fall' ? 0 : startLevel));
           gauge.set(startLevel);
-          body.appendChild(gauge.el);
+          // v0.3.2: STEP 화면에서는 민감도 게이지를 사용자에게 표시하지 않음
+          //   (내부 로직/게이지 객체는 유지 — state.irritation 갱신·완료 판정에 사용,
+          //    화면에는 붙이지 않아 계면이 연출·문구 전달에 집중)
         }
 
         var stage = div('stage');
