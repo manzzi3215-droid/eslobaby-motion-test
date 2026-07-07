@@ -14,7 +14,9 @@
 
 ## 현재 버전
 
-**v0.4.4-beta** (버전은 `config.js`의 `meta.version` 및 `CHANGELOG.md`와 항상 일치시킬 것)
+**v0.4.5-beta** (버전은 `config.js`의 `meta.version` 및 `CHANGELOG.md`와 항상 일치시킬 것)
+※ 폰트는 **Jua**(Google Fonts, index/share 로드). 로고는 투명 PNG(흰 배경 flood-fill 제거).
+  제품 3종은 가로 일렬(`buildProductHero`). 문구 줄바꿈은 config `\n`.
 ※ 이 저장소는 운영본과 분리된 **beta 미러**입니다.
 - STEP 화면 민감도 게이지는 사용자 화면에 미표시(내부 로직/`buildGauge`는 유지).
 - STEP 연출: 제품(바디워시/이슬로) 문지르면 거품+계면이 동시 생성(`surfactantGrow`).

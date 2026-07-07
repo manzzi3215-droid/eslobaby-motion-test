@@ -1411,32 +1411,34 @@ button.pdot.is-clickable:active { transform: scale(0.9); }
  * ★ v0.4.4-beta — 공식 로고 · 제품 3종 히어로 · 드래그 유도 · 실제 제품 병 비율
  * ========================================================================== */
 
-/* 1) 로고: 실제 비율(243:142) 박스로 (contain, 잘림 없음·선명) */
-.brand-logo, .ending-logo { height: auto; aspect-ratio: 243 / 142; }
-.brand-logo img, .ending-logo img { image-rendering: auto; }
+/* 1) 로고: 실제 비율(243:142) 박스로 (투명 PNG, 흰 배경 없음) + 은은한 그림자 */
+.brand-logo, .ending-logo { height: auto; aspect-ratio: 243 / 142; background: transparent; }
+.brand-logo img, .ending-logo img { filter: drop-shadow(0 2px 4px rgba(60,110,160,0.18)); }
 
-/* 4·6) 제품 3종 히어로 (Page 6·10) — 가운데 최대·좌우 뒤로 회전·겹침·입체 */
+/* 4·6) 제품 3종 (Page 6·10) — v0.4.5: 가로 일렬 나란히 (겹침 없음·모두 크게·균형 간격) */
 .product-hero {
-  position: relative;
-  width: min(92%, 460px);
-  height: clamp(176px, 30vh, 300px);
-  display: flex; align-items: center; justify-content: center;
+  width: min(94%, 440px);
+  margin: clamp(4px, 1vh, 10px) auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: clamp(6px, 2.2vw, 20px);
 }
 .ph-item {
-  position: absolute;
-  height: 82%;
-  aspect-ratio: 500 / 1000;                 /* 세로 병 비율 */
-  filter: drop-shadow(0 14px 20px rgba(60, 110, 160, 0.30));
+  position: static;
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 33.3%;
+  height: auto;
+  aspect-ratio: 500 / 1000;                 /* 세로 병 비율 (원본 유지) */
+  transform: none;
+  filter: drop-shadow(0 10px 16px rgba(60, 110, 160, 0.24));
+  animation: heroFade 400ms ease both;
 }
-.ph-center { height: 100%; z-index: 3; animation: heroPop 480ms cubic-bezier(.2,.9,.3,1.2) both; }
-.ph-left   { transform: translateX(-52%) rotate(-12deg) scale(0.85); z-index: 1; animation: heroFade 420ms ease 60ms both; }
-.ph-right  { transform: translateX(52%)  rotate(12deg)  scale(0.85); z-index: 2; animation: heroFade 420ms ease 120ms both; }
-@keyframes heroPop {
-  0%   { opacity: 0; transform: translateY(12px) scale(0.86); }
-  60%  { opacity: 1; transform: translateY(0) scale(1.04); }
-  100% { transform: scale(1); }
-}
-@keyframes heroFade { from { opacity: 0; } to { opacity: 1; } }
+.ph-1 { animation-delay: 40ms; }
+.ph-2 { animation-delay: 110ms; }
+.ph-3 { animation-delay: 180ms; }
+@keyframes heroFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
 /* 3) 드래그 유도: 흰색 글로우 + 펄스 링(::before) + 손가락 힌트 (잡으면 사라짐) */
 .drag-tool { filter: drop-shadow(0 0 5px rgba(255,255,255,0.95)) drop-shadow(0 8px 16px rgba(74,144,194,0.30)); }
@@ -1473,3 +1475,18 @@ button.pdot.is-clickable:active { transform: scale(0.9); }
   .drag-tool.tool-eslo { width: clamp(60px, 17vw, 96px); }
   .product-hero { width: min(96%, 420px); }
 }
+
+/* =============================================================================
+ * ★ v0.4.5-beta — 타이포그래피 다듬기 (Jua 폰트 · 줄간격/자간/문단여백)
+ *   문장은 의미 단위 줄바꿈(config \n) + 아래 여백/줄간격으로 읽기 편하게.
+ * ========================================================================== */
+.card-title   { line-height: 1.42; letter-spacing: -0.2px; margin-bottom: clamp(10px, 2vh, 20px); }
+.mission-goal { line-height: 1.42; letter-spacing: -0.2px; }
+.success-desc { line-height: 1.5;  letter-spacing: -0.1px; }
+.ending-sub   { line-height: 1.7;  letter-spacing: -0.1px; }
+.warning-sub  { line-height: 1.45; }
+.gate-title   { line-height: 1.55; letter-spacing: -0.2px; }
+.keyword      { line-height: 1.4;  letter-spacing: 0; }
+.hint         { line-height: 1.55; letter-spacing: 0; }
+/* Jua 는 획이 굵고 둥글어 아주 작은 글씨는 살짝 키워 가독성 확보 */
+.page-num     { font-size: clamp(11px, 1.4vw, 14px); letter-spacing: 0.3px; }

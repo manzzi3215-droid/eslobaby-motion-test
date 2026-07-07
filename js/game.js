@@ -703,19 +703,19 @@
     });
   }
 
-  // 이슬로 베이비 3종 히어로 (브랜드 메인 비주얼: 가운데 최대·좌우 뒤로 회전·겹침·입체감)
+  // 이슬로 베이비 3종 (v0.4.5: 가로 일렬 나란히 배치 — 겹침 없이 모두 잘 보이게)
   //   Page 6(이슬로 소개) / Page 10(최종 브랜드)에서 공통 사용.
   function buildProductHero() {
     var hero = div('product-hero');
     var items = [
-      { src: CFG.assets.ending.cleanser, label: CFG.placeholders.endCleanser, cls: 'ph-left' },
-      { src: CFG.assets.ending.lotion,   label: CFG.placeholders.endLotion,   cls: 'ph-right' },
-      { src: CFG.assets.ending.bath,     label: CFG.placeholders.endBath,     cls: 'ph-center' },
+      { src: CFG.assets.ending.bath,     label: CFG.placeholders.endBath },
+      { src: CFG.assets.ending.cleanser, label: CFG.placeholders.endCleanser },
+      { src: CFG.assets.ending.lotion,   label: CFG.placeholders.endLotion },
     ];
-    items.forEach(function (it) {
+    items.forEach(function (it, i) {
       hero.appendChild(C.createAsset({
         src: it.src, label: it.label, shape: 'product', variant: 'mint',
-        className: 'ph-item ' + it.cls,
+        className: 'ph-item ph-' + (i + 1),
       }));
     });
     return hero;

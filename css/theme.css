@@ -31,8 +31,9 @@
   --ph-border:  #bcdcef;
   --ph-text:    #7fa5bd;
 
-  /* --- 폰트 --- */
-  --font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic',
+  /* --- 폰트 (v0.4.5: 둥글둥글 귀여운 베이비 느낌 — Jua, 무료 Google Fonts.
+   *   로드 실패(오프라인)시 시스템 한글 폰트로 자연 폴백) --- */
+  --font-family: 'Jua', 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic',
                  system-ui, -apple-system, sans-serif;
 
   /* --- 글자 크기 (멀리서도 잘 보이게 큼직하게) --- */
