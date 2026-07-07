@@ -19,7 +19,7 @@
 window.ESLO_CONFIG = {
   /* --- 프로젝트 메타 --------------------------------------------------- */
   meta: {
-    version: 'v0.4.1-beta',
+    version: 'v0.4.2-beta',
     title: '이슬로(eslo) 베이비 미니게임',
   },
 
@@ -29,14 +29,24 @@ window.ESLO_CONFIG = {
   assets: {
     qr:        'assets/qr/kakao-qr.png',        // 카카오 채널 QR
     logo:      'assets/images/logo.png',        // eslo 로고
-    child:     'assets/images/child.png',       // 아이 캐릭터 (평상시)
-    childSad:  'assets/images/child-sad.png',   // 아이 캐릭터 (울상)
-    childHappy:'assets/images/child-happy.png', // 아이 캐릭터 (웃는 얼굴)
+    // 아기 캐릭터 (v0.4.2-beta: 실제 1x 에셋 적용)
+    child:     'assets/images/baby-basic.png',  // 기본 상태
+    childSad:  'assets/images/baby-sad.png',    // 피부 자극·실패(울상+발진)
+    childHappy:'assets/images/baby-happy.png',  // 미션 성공·깨끗해진 상태
     background:'assets/images/background.png',   // 욕실 배경 (비우면 SVG 욕실 연출)
     magnifier: 'assets/images/magnifier.png',   // 돋보기 (현재 흐름 미사용)
     bubble:    'assets/images/bubble.png',      // 거품 (비우면 도형 거품)
     warningLight: 'assets/images/warning-light.png', // 경고등/비상등 (게이지 100%)
-    surfactant:   'assets/images/surfactant.png',    // 계면이 캐릭터 (피부 잔여 자극)
+    // 계면이(gyemeon) — v0.4.2-beta: 실제 1x 에셋. 표정 변형 5종 + Scene 8 씻김용 sad.
+    surfactant:   'assets/images/gyemeon1.png',       // 기본 단일 fallback
+    gyemeon: [
+      'assets/images/gyemeon1.png',   // 웃음(장난)
+      'assets/images/gyemeon2.png',   // 뾰루퉁
+      'assets/images/gyemeon3.png',   // 화남
+      'assets/images/gyemeon4.png',   // 능글(웃음)
+      'assets/images/gyemeon5.png',   // 놀람
+    ],
+    gyemeonSad:   'assets/images/gyemeon6-sad.png',   // Scene 8: 씻겨 내려갈 때 표정
     products: {
       bodywash: 'assets/images/bodywash.png',   // 일반 바디워시 (무지 흰색 펌프)
       shower:   'assets/images/shower.png',     // 샤워기

@@ -11,6 +11,31 @@
 
 ---
 
+## [v0.4.2-beta] - 2026-07-07
+### 실제 디자인 에셋(아기·계면이) 적용 (beta 저장소)
+placeholder(SVG)로 그리던 아기·계면이를 새로 받은 `1x` PNG 에셋으로 교체. **이미지 리소스만 교체**하며
+게임 로직·판정·애니메이션·타이밍은 불변. placeholder 시스템은 그대로 유지(이미지 실패 시 SVG fallback).
+
+### Added (assets/images)
+- 아기 3종: `baby-basic.png`(기본) / `baby-happy.png`(성공·깨끗) / `baby-sad.png`(자극·실패).
+- 계면이 6종: `gyemeon1~5.png`(표정 변형) + `gyemeon6-sad.png`(Scene 8 씻김 표정).
+
+### Changed
+- **아기 이미지 매핑**: `config.assets.child/childHappy/childSad` → 새 아기 PNG.
+  아기 이미지 비율(481×705, 세로형)에 맞춰 `.child-body` 를 `aspect-ratio: 481/705` 세로 박스로 보정
+  (이미지가 여백 없이 꽉 차게, 데스크톱·모바일 반응형).
+- **계면이 표정 매핑**: `config.assets.gyemeon`(5종 배열) + `gyemeonSad`. 인스턴스마다 무작위 표정,
+  장면 감정(mood)에 어울리는 표정 풀 선택 — playful=웃음/능글, anxious=뾰루퉁/화남, panic=놀람/화남 등.
+- **Scene 8(esloRinse) 씻김 표정 교체**: 샤워기에 맞아 씻겨 내려가기 시작하는 순간 표정을
+  `gyemeon6-sad.png` 로 변경한 뒤 그대로 씻겨 내려감. (평소엔 일반 계면이 표정, 씻김 순간에만 sad)
+- PWA precache 에 새 이미지 9종 추가, 캐시 버전 `eslo-game-v0.4.2-beta`.
+
+### Removed
+- 별도 제거된 이미지 파일 없음(기존 `assets/images` 에는 실제 이미지가 없었고 SVG placeholder 사용 중이었음).
+  config 의 이전 경로(child.png/surfactant.png 등)는 새 에셋 경로로 갱신.
+
+---
+
 ## [v0.4.1-beta] - 2026-07-06
 ### 인터랙션·연출 완성도 향상 (UI/UX Polish, beta 저장소)
 기능 추가 없이 전체 연출/애니메이션을 브랜드 인터랙티브 콘텐츠 수준으로 다듬음.

@@ -1363,3 +1363,17 @@ button.pdot.is-clickable:active { transform: scale(0.9); }
   .gauge-bar { height: 16px; }
   .btn-primary { min-height: 56px; padding: 0 24px; font-size: 17px; }
 }
+
+/* =============================================================================
+ * ★ v0.4.2-beta — 실제 에셋 비율·크기 보정 (원본 뒤 최종 위치)
+ *   아기: 481×705(세로형) → child-body 를 세로 비율 박스로 (이미지 꽉 차게, 여백 없음).
+ *   계면이(gyemeon ~1:1)·제품 SVG placeholder 는 기존 정사각 박스 그대로 자연스럽게 들어감.
+ * ========================================================================== */
+.child-body {
+  width: clamp(150px, 30vw, 214px);
+  height: auto;
+  aspect-ratio: 481 / 705;
+}
+@media (orientation: portrait) {
+  .child-body { width: clamp(178px, 46vw, 240px); }
+}

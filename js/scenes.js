@@ -72,6 +72,7 @@
       tool: 'shower', action: 'rinse', hint: T.hints.dragRinse,
       gauge: 'fall', gaugeFrom: 0.5, gaugeTo: 0,
       surfactant: true, surfactantFrom: 1, surfactantTo: 0, surfactantMood: 'panic',
+      washFace: true,           // v0.4.2: Scene 8 — 씻길 때 gyemeon6-sad 로 표정 교체
       requireGaugeZero: true },
 
     // 장면 ⑨ — MISSION 성공! (웃는 아이 + 반짝임, 제품 이미지 없음)

@@ -547,9 +547,12 @@
         var surfEls = [];
         var surfGrow = !!scene.surfactantGrow;
         var surfWashFraction = 0;   // 이번 장면에서 씻어낼 비율 (표시 개수 기준)
+        // v0.4.2: Scene 8(esloRinse) — 씻겨 내려가는 순간 gyemeon6-sad 로 표정 교체
+        var washFaceSrc = scene.washFace ? CFG.assets.gyemeonSad : null;
+        if (washFaceSrc) { var pre = new Image(); pre.src = washFaceSrc; }   // 미리 로드(교체 시 깜빡임 방지)
         if (scene.surfactant) {
           var surfCount = CFG.gauge.surfactantCount;   // 총 계면이 개수 (표시 최대치)
-          surfEls = addSurfactants(childBody, surfCount);
+          surfEls = addSurfactants(childBody, surfCount, surfactantFaces(scene.surfactantMood));  // 감정별 표정 무작위
           // v0.4.1: 장면별 감정 모션 (playful/clinging/anxious/panic)
           if (scene.surfactantMood) {
             surfEls.forEach(function (s) { s.classList.add('mood-' + scene.surfactantMood); });
@@ -613,7 +616,7 @@
             setFoam(bubbles, isRinse ? (1 - r) : r);   // 거품: 생성(foam) 또는 씻김(rinse)
             if (surfGrow) revealSurfactants(surfEls, r);            // 계면이 점점 생성
             if (scene.weaken) weakenSurfactants(surfEls, r);
-            if (surfWashFraction > 0) washSurfactants(surfEls, r * surfWashFraction);  // 계면이 씻김
+            if (surfWashFraction > 0) washSurfactants(surfEls, r * surfWashFraction, washFaceSrc);  // 계면이 씻김
             applyGauge(r);
           },
           onComplete: function () {
@@ -624,7 +627,7 @@
             }
             if (surfGrow) revealSurfactants(surfEls, 1);            // 계면이 모두 생성
             if (scene.weaken) weakenSurfactants(surfEls, 1);
-            if (surfWashFraction > 0) washSurfactants(surfEls, surfWashFraction);
+            if (surfWashFraction > 0) washSurfactants(surfEls, surfWashFraction, washFaceSrc);
 
             // requireGaugeZero: 게이지가 0%인지 확인한 뒤에만 다음 단계로
             // ("진정 완료" 연출(calmHold)은 0%까지 내려가는 장면에서만 —
@@ -650,7 +653,7 @@
       shell(el, scene, scene.title, function (body) {
         var panel = div('closeup-panel' + (scene.skin === 'irritated' ? ' is-irritated' : ''));
         addIrritations(panel, 8);
-        if (scene.surfactant) addSurfactants(panel, 6);
+        if (scene.surfactant) addSurfactants(panel, 6, surfactantFaces(scene.surfactantMood));
 
         body.appendChild(panel);
         body.appendChild(makeHint(CFG.texts.hints.tapNext));
@@ -856,14 +859,18 @@
     bubbles.forEach(function (b, i) { b.style.opacity = i < n ? '1' : '0'; });
   }
 
-  // 계면이: outer(위치·씻김) + inner(감정 모션) 래퍼 구조 (v0.4.1)
-  function addSurfactants(parent, n) {
+  // 계면이: outer(위치·씻김) + inner(감정 모션·이미지) 래퍼 구조 (v0.4.1)
+  //   faceList: 표정 변형 이미지 경로 배열(없으면 기본 단일). 인스턴스마다 무작위 선택 (v0.4.2)
+  function addSurfactants(parent, n, faceList) {
     var arr = [];
     for (var i = 0; i < n; i++) {
       var wrap = div('surfactant');
       wrap.style.left = (14 + Math.random() * 68) + '%';
       wrap.style.top = (14 + Math.random() * 66) + '%';
-      var inner = C.createAsset({ src: CFG.assets.surfactant, label: CFG.placeholders.surfactant, shape: 'germ', className: 'surfactant-inner' });
+      var src = (faceList && faceList.length)
+        ? faceList[Math.floor(Math.random() * faceList.length)]
+        : CFG.assets.surfactant;
+      var inner = C.createAsset({ src: src, label: CFG.placeholders.surfactant, shape: 'germ', className: 'surfactant-inner' });
       inner.style.animationDelay = (Math.random() * 0.5).toFixed(2) + 's';  // 감정 모션 변주
       wrap.appendChild(inner);
       parent.appendChild(wrap);
@@ -871,10 +878,32 @@
     }
     return arr;
   }
+  // 장면 감정(mood) → 어울리는 계면이 표정(gyemeon) 인덱스 풀 (v0.4.2)
+  var MOOD_FACES = {
+    playful:  [0, 3],   // 웃음/능글 (신나게)
+    clinging: [3, 0],   // 능글/웃음 (아직 안 없어졌어)
+    anxious:  [1, 2],   // 뾰루퉁/화남 (불안)
+    panic:    [4, 2],   // 놀람/화남
+  };
+  function surfactantFaces(mood) {
+    var g = CFG.assets.gyemeon;
+    if (!g || !g.length) return null;                 // 배열 없으면 기본 단일 사용
+    var idxs = MOOD_FACES[mood];
+    return idxs ? idxs.map(function (i) { return g[i]; }) : g.slice();
+  }
   // 헹구는 진행도(r)에 따라 계면이들을 아래로 씻겨보냄
-  function washSurfactants(surfEls, r) {
+  //   washFaceSrc: 지정 시(Scene 8) 씻겨 내려가기 시작하는 순간 표정을 그 이미지로 교체 (v0.4.2)
+  function washSurfactants(surfEls, r, washFaceSrc) {
     var washed = Math.round(surfEls.length * clamp01(r));
-    surfEls.forEach(function (s, i) { if (i < washed) s.classList.add('is-washed'); });
+    surfEls.forEach(function (s, i) {
+      if (i < washed && !s.classList.contains('is-washed')) {
+        s.classList.add('is-washed');
+        if (washFaceSrc) {
+          var img = s.querySelector('img');
+          if (img) img.src = washFaceSrc;   // gyemeon6-sad 로 표정 변경 후 그대로 씻겨 내려감
+        }
+      }
+    });
   }
   // v0.3.3: 문지를수록 계면이가 하나씩 생겨나는 연출 (진행도 r 만큼 표시)
   function revealSurfactants(surfEls, r) {

@@ -11,7 +11,7 @@
  * ========================================================================== */
 'use strict';
 
-var CACHE_NAME = 'eslo-game-v0.4.1-beta';
+var CACHE_NAME = 'eslo-game-v0.4.2-beta';
 
 // 미리 캐싱할 핵심 파일 (상대경로)
 var PRECACHE = [
@@ -35,6 +35,16 @@ var PRECACHE = [
   './js/qrcode.js',
   './js/share.js',
   './assets/icons/icon.svg',
+  // v0.4.2: 실제 아기·계면이 에셋
+  './assets/images/baby-basic.png',
+  './assets/images/baby-happy.png',
+  './assets/images/baby-sad.png',
+  './assets/images/gyemeon1.png',
+  './assets/images/gyemeon2.png',
+  './assets/images/gyemeon3.png',
+  './assets/images/gyemeon4.png',
+  './assets/images/gyemeon5.png',
+  './assets/images/gyemeon6-sad.png',
 ];
 
 self.addEventListener('install', function (e) {
