@@ -11,7 +11,7 @@
  * ========================================================================== */
 'use strict';
 
-var CACHE_NAME = 'eslo-game-v0.4.3-beta';
+var CACHE_NAME = 'eslo-game-v0.4.4-beta';
 
 // 미리 캐싱할 핵심 파일 (상대경로)
 var PRECACHE = [
@@ -46,6 +46,11 @@ var PRECACHE = [
   './assets/images/gyemeon4.png',
   './assets/images/gyemeon5.png',
   './assets/images/gyemeon6-sad.png',
+  // v0.4.4: 공식 로고 + 이슬로 베이비 제품 3종
+  './assets/images/logo.png',
+  './assets/images/eslo-bath.png',
+  './assets/images/eslo-cleanser.png',
+  './assets/images/eslo-lotion.png',
 ];
 
 self.addEventListener('install', function (e) {

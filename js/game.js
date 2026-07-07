@@ -387,16 +387,14 @@
       shell(el, scene, scene.title, function (body) {
         var logo = C.createAsset({ src: CFG.assets.logo, label: CFG.placeholders.logo, shape: 'logo', className: 'ending-logo' });
 
-        var cards = div('cards is-compact');
-        cards.appendChild(buildCard(CFG.assets.ending.bath, CFG.placeholders.endBath, 'mint', false));
-        cards.appendChild(buildCard(CFG.assets.ending.cleanser, CFG.placeholders.endCleanser, 'blue', false));
-        cards.appendChild(buildCard(CFG.assets.ending.lotion, CFG.placeholders.endLotion, 'cream', false));
+        // v0.4.4: Page 6과 동일한 3종 히어로 배치
+        var hero = buildProductHero();
 
         var desc = div('ending-sub');
         desc.textContent = scene.desc || '';
 
         body.appendChild(logo);
-        body.appendChild(cards);
+        body.appendChild(hero);
         body.appendChild(desc);
         body.appendChild(C.createButton(CFG.texts.replayButton, renderGate));
       });
@@ -591,8 +589,15 @@
         tool.style.left = '18%';
         tool.style.top = '22%';
 
+        // v0.4.4: "이걸 움직이세요" 드래그 유도 연출 — 펄스 링(tool::before) + 손가락 힌트 (판정 영향 없음)
+        var handHint = div('drag-hint'); handHint.textContent = '👆';
+        handHint.style.left = '30%'; handHint.style.top = '40%';
+        // 처음 잡는 순간 유도 연출 종료 (게임 로직/판정과 무관, UI만)
+        tool.addEventListener('pointerdown', function () { stage.classList.add('is-grabbed'); }, { once: true });
+
         stage.appendChild(childBody);
         stage.appendChild(tool);
+        stage.appendChild(handHint);
         body.appendChild(makeHint(scene.hint));   // 보조문구 (제목 아래)
         body.appendChild(stage);
 
@@ -675,14 +680,12 @@
     });
   }
 
-  // 이슬로 소개 (제품 + 키워드 — 설명 화면, STEP 배지 없음)
+  // 이슬로 소개 (제품 3종 히어로 + 키워드 — 설명 화면, STEP 배지 없음)
+  //   v0.4.4: 단일 제품 → 3종 브랜드 메인 비주얼(가운데 크게·좌우 뒤로 회전·겹침)
   function renderBrand(scene) {
     showScreen(function (el) {
       shell(el, scene, scene.title, function (body) {
-        var product = C.createAsset({
-          src: CFG.assets.products.eslo, label: CFG.placeholders.eslo,
-          shape: 'eslo', className: 'brand-product',
-        });
+        var hero = buildProductHero();
 
         var list = div('keyword-list');
         (scene.keywords || []).forEach(function (k) {
@@ -691,13 +694,31 @@
           list.appendChild(row);
         });
 
-        body.appendChild(product);
+        body.appendChild(hero);
         body.appendChild(list);
         body.appendChild(makeHint(CFG.texts.hints.tapNext));
       });
       tapAdvance(el);
       setTimer(next, CFG.timings.missionAutoAdvance);
     });
+  }
+
+  // 이슬로 베이비 3종 히어로 (브랜드 메인 비주얼: 가운데 최대·좌우 뒤로 회전·겹침·입체감)
+  //   Page 6(이슬로 소개) / Page 10(최종 브랜드)에서 공통 사용.
+  function buildProductHero() {
+    var hero = div('product-hero');
+    var items = [
+      { src: CFG.assets.ending.cleanser, label: CFG.placeholders.endCleanser, cls: 'ph-left' },
+      { src: CFG.assets.ending.lotion,   label: CFG.placeholders.endLotion,   cls: 'ph-right' },
+      { src: CFG.assets.ending.bath,     label: CFG.placeholders.endBath,     cls: 'ph-center' },
+    ];
+    items.forEach(function (it) {
+      hero.appendChild(C.createAsset({
+        src: it.src, label: it.label, shape: 'product', variant: 'mint',
+        className: 'ph-item ' + it.cls,
+      }));
+    });
+    return hero;
   }
 
   // 미션 성공 연출 (보존 — 현재 흐름 미사용, missionSuccess 로 대체)

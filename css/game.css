@@ -1406,3 +1406,70 @@ button.pdot.is-clickable:active { transform: scale(0.9); }
   .surfactant.mood-float { width: clamp(22px, 6.4vw, 34px); height: clamp(22px, 6.4vw, 34px); }
   .drag-tool.tool-shower { width: clamp(112px, 33vw, 165px); height: clamp(112px, 33vw, 165px); }
 }
+
+/* =============================================================================
+ * ★ v0.4.4-beta — 공식 로고 · 제품 3종 히어로 · 드래그 유도 · 실제 제품 병 비율
+ * ========================================================================== */
+
+/* 1) 로고: 실제 비율(243:142) 박스로 (contain, 잘림 없음·선명) */
+.brand-logo, .ending-logo { height: auto; aspect-ratio: 243 / 142; }
+.brand-logo img, .ending-logo img { image-rendering: auto; }
+
+/* 4·6) 제품 3종 히어로 (Page 6·10) — 가운데 최대·좌우 뒤로 회전·겹침·입체 */
+.product-hero {
+  position: relative;
+  width: min(92%, 460px);
+  height: clamp(176px, 30vh, 300px);
+  display: flex; align-items: center; justify-content: center;
+}
+.ph-item {
+  position: absolute;
+  height: 82%;
+  aspect-ratio: 500 / 1000;                 /* 세로 병 비율 */
+  filter: drop-shadow(0 14px 20px rgba(60, 110, 160, 0.30));
+}
+.ph-center { height: 100%; z-index: 3; animation: heroPop 480ms cubic-bezier(.2,.9,.3,1.2) both; }
+.ph-left   { transform: translateX(-52%) rotate(-12deg) scale(0.85); z-index: 1; animation: heroFade 420ms ease 60ms both; }
+.ph-right  { transform: translateX(52%)  rotate(12deg)  scale(0.85); z-index: 2; animation: heroFade 420ms ease 120ms both; }
+@keyframes heroPop {
+  0%   { opacity: 0; transform: translateY(12px) scale(0.86); }
+  60%  { opacity: 1; transform: translateY(0) scale(1.04); }
+  100% { transform: scale(1); }
+}
+@keyframes heroFade { from { opacity: 0; } to { opacity: 1; } }
+
+/* 3) 드래그 유도: 흰색 글로우 + 펄스 링(::before) + 손가락 힌트 (잡으면 사라짐) */
+.drag-tool { filter: drop-shadow(0 0 5px rgba(255,255,255,0.95)) drop-shadow(0 8px 16px rgba(74,144,194,0.30)); }
+.drag-tool::before {
+  content: ""; position: absolute; inset: -14%;
+  border-radius: 50%;
+  border: 3px solid rgba(255,255,255,0.9);
+  box-shadow: 0 0 12px rgba(120,190,235,0.7);
+  animation: dragPulse 1.5s ease-in-out infinite;
+  pointer-events: none; z-index: -1;
+}
+@keyframes dragPulse {
+  0%, 100% { transform: scale(0.9);  opacity: 0.45; }
+  50%      { transform: scale(1.12); opacity: 1; }
+}
+.drag-hint {
+  position: absolute;
+  font-size: clamp(26px, 6vw, 42px);
+  transform: translate(-50%, -50%);
+  pointer-events: none; z-index: 6;
+  animation: handBob 1.1s ease-in-out infinite;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.22));
+}
+@keyframes handBob {
+  0%, 100% { transform: translate(-50%, -50%) translateY(0)    rotate(-8deg); }
+  50%      { transform: translate(-50%, -50%) translateY(-9px) rotate(3deg); }
+}
+.stage.is-grabbed .drag-tool::before { animation: none; opacity: 0; }
+.stage.is-grabbed .drag-hint { opacity: 0; animation: none; transition: opacity var(--t-fast) ease; }
+
+/* 5) 이슬로 제품(Page 7 드래그 도구) — 실제 병 비율(세로) */
+.drag-tool.tool-eslo { width: clamp(66px, 10vw, 104px); height: auto; aspect-ratio: 500 / 1000; }
+@media (orientation: portrait) {
+  .drag-tool.tool-eslo { width: clamp(60px, 17vw, 96px); }
+  .product-hero { width: min(96%, 420px); }
+}

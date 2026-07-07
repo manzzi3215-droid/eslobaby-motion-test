@@ -49,7 +49,7 @@
         + '</svg>';
     },
 
-    // 무지 흰색 펌프 바디워시
+    // 무지 흰색 펌프 바디워시 (v0.4.4: 라벨 텍스트 제거 — 제품 형태만 표시)
     pump: function (label) {
       return '<svg viewBox="0 0 100 140" xmlns="http://www.w3.org/2000/svg">'
         + '<rect x="46" y="4" width="7" height="14" rx="2" fill="#c9d4db"/>'
@@ -57,7 +57,6 @@
         + '<rect x="36" y="16" width="28" height="12" rx="3" fill="#e6edf1" stroke="#c9d4db" stroke-width="1.5"/>'
         + '<rect x="26" y="28" width="48" height="104" rx="14" fill="#ffffff" stroke="#cfdae1" stroke-width="2.5"/>'
         + '<rect x="33" y="64" width="34" height="42" rx="5" fill="#f1f5f8"/>'
-        + '<text x="50" y="90" text-anchor="middle" font-size="13" fill="#9bb0bd" font-weight="700">' + (label || '일반') + '</text>'
         + '</svg>';
     },
 
