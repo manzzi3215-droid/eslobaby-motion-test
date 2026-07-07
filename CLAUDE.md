@@ -14,7 +14,7 @@
 
 ## 현재 버전
 
-**v0.4.2-beta** (버전은 `config.js`의 `meta.version` 및 `CHANGELOG.md`와 항상 일치시킬 것)
+**v0.4.3-beta** (버전은 `config.js`의 `meta.version` 및 `CHANGELOG.md`와 항상 일치시킬 것)
 ※ 이 저장소는 운영본과 분리된 **beta 미러**입니다.
 - STEP 화면 민감도 게이지는 사용자 화면에 미표시(내부 로직/`buildGauge`는 유지).
 - STEP 연출: 제품(바디워시/이슬로) 문지르면 거품+계면이 동시 생성(`surfactantGrow`).
@@ -53,6 +53,8 @@
 | `css/admin.css` | 관리자 대시보드 스타일 (v0.4.0-beta) |
 | `js/analytics.js` | 플레이 통계 수집 (LocalStorage, Firebase 확장 가능) (v0.4.0-beta) |
 | `js/admin.js` | 관리자 대시보드 UI(톱니바퀴→로그인→통계) (v0.4.0-beta) |
+| `js/sfx.js` | 효과음(Web Audio 합성, config.sfx.files 로 교체 가능) (v0.4.3-beta) |
+| `assets/sounds/` | 효과음 음원 자리(교체용, README 참고) (v0.4.3-beta) |
 | `assets/` | 추후 실제 이미지, 효과음, 로고 파일 저장 |
 | `share.html` | 공유용 QR 페이지 (v0.2.6~) |
 | `js/qrcode.js` | 외부 라이브러리 없는 QR 코드 생성기 (v0.2.6~) |

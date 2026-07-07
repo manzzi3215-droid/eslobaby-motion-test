@@ -19,7 +19,7 @@
 window.ESLO_CONFIG = {
   /* --- 프로젝트 메타 --------------------------------------------------- */
   meta: {
-    version: 'v0.4.2-beta',
+    version: 'v0.4.3-beta',
     title: '이슬로(eslo) 베이비 미니게임',
   },
 
@@ -200,7 +200,18 @@ window.ESLO_CONFIG = {
     colorStops: ['#5db6e6', '#ffb85c', '#ff5a5a'],
     warnThreshold: 0.98,
     calmThreshold: 0.02,    // 이 값 이하이면 "진정 완료" (0% 취급)
-    surfactantCount: 8,
+    surfactantCount: 6,     // v0.4.3: 8→6 (얼굴 가림 완화·화면 정리, 판정과 무관)
+  },
+
+  /* --- 효과음(SFX) (v0.4.3-beta) --------------------------------------
+   * 기본은 Web Audio 로 합성한 가볍고 귀여운 효과음(무료·무설치).
+   * 추후 실제 음원으로 교체하려면 files 에 경로를 넣으면 그 파일을 재생합니다.
+   *   예) files: { click: 'assets/sounds/click.mp3', success: 'assets/sounds/success.mp3', ... }
+   * ------------------------------------------------------------------- */
+  sfx: {
+    enabled: true,
+    volume: 0.35,           // 마스터 볼륨(0~1, 너무 크지 않게)
+    files: {},              // 비어있으면 합성음 사용
   },
 
   /* --- 관리자(Admin) 모드 (v0.4.0-beta) -------------------------------

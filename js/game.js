@@ -35,6 +35,8 @@
     cleanups.forEach(function (f) { try { f(); } catch (_) {} }); cleanups = [];
   }
   function clamp01(v) { return Math.max(0, Math.min(1, v)); }
+  // v0.4.3: 효과음 재생 (SFX 모듈 없거나 실패해도 게임에 영향 없음)
+  function sfx(name) { try { if (window.SFX) window.SFX.play(name); } catch (_) {} }
 
   function lerpColor(a, b, t) {
     function rgb(h) {
@@ -296,6 +298,7 @@
     var scene = SCENES[index];
     updateCtrlButtons();                 // 다음 버튼 활성/비활성 갱신
     if (window.Analytics) window.Analytics.enterScene(scene.id, scene.phase);  // v0.4.0: 통계
+    sfx('scene');                        // v0.4.3: Scene 시작 효과음
     // 진행 표시(페이지 점)는 카드 안쪽에서 shell 이 직접 그림 (v0.2.8)
     (RENDERERS[scene.type] || RENDERERS.message)(scene);
   }
@@ -371,6 +374,7 @@
         body.appendChild(stage);
         body.appendChild(makeHint(CFG.texts.hints.tapNext));
       });
+      sfx('success');                      // v0.4.3: 성공 효과음
       tapAdvance(el);
       setTimer(next, CFG.timings.successHold);
     });
@@ -396,6 +400,7 @@
         body.appendChild(desc);
         body.appendChild(C.createButton(CFG.texts.replayButton, renderGate));
       });
+      sfx('complete');                     // v0.4.3: 최종 완료 효과음
     });
   }
 
@@ -483,7 +488,7 @@
           src: CFG.assets.childSad, label: CFG.placeholders.childSad,
           shape: 'baby', variant: 'sad', className: 'child-body is-distress',
         });
-        addIrritations(childBody, 6);
+        // v0.4.3: Page 4 아기 얼굴 위 빨간 원(irritation) 제거 — baby-sad 이미지에 이미 발진이 있어 불필요
         stage.appendChild(childBody);
 
         // 비상 경고등 (기존보다 크게, 반응형) — 무대 좌하단
@@ -497,6 +502,7 @@
         body.appendChild(stage);
         body.appendChild(makeHint(CFG.texts.hints.tapNext));
       }, 'warn');
+      sfx('warn');                         // v0.4.3: 경고/실패 효과음
       tapAdvance(el);
       setTimer(next, CFG.timings.warningHold + 800);
     });
@@ -538,7 +544,7 @@
         setFoam(bubbles, isRinse ? 1 : 0);
 
         // v0.4.1: 샤워(헹굼) 장면은 아래로 흐르는 물 연출 추가 (STEP1②·STEP3)
-        if (isRinse) { stage.classList.add('is-rinsing'); addWaterFlow(stage, 10); }
+        if (isRinse) { stage.classList.add('is-rinsing'); addWaterFlow(stage, 10); sfx('water'); }  // v0.4.3: 물줄기 효과음
 
         // 계면이 연출 (v0.3.3):
         //   surfactantGrow  : 문지를수록 계면이가 하나씩 생겨남 (거품과 동시) — STEP1①/STEP2
@@ -552,7 +558,8 @@
         if (washFaceSrc) { var pre = new Image(); pre.src = washFaceSrc; }   // 미리 로드(교체 시 깜빡임 방지)
         if (scene.surfactant) {
           var surfCount = CFG.gauge.surfactantCount;   // 총 계면이 개수 (표시 최대치)
-          surfEls = addSurfactants(childBody, surfCount, surfactantFaces(scene.surfactantMood));  // 감정별 표정 무작위
+          // v0.4.3: 아기 얼굴 영역을 피해 몸(팔·배·다리) 주변에만 배치(avoidFace=true)
+          surfEls = addSurfactants(childBody, surfCount, surfactantFaces(scene.surfactantMood), true);
           // v0.4.1: 장면별 감정 모션 (playful/clinging/anxious/panic)
           if (scene.surfactantMood) {
             surfEls.forEach(function (s) { s.classList.add('mood-' + scene.surfactantMood); });
@@ -578,7 +585,8 @@
 
         var tool = C.createAsset({
           src: toolSrc(scene.tool), label: toolLabel(scene.tool),
-          shape: toolShape(scene.tool), className: 'drag-tool',
+          shape: toolShape(scene.tool),
+          className: 'drag-tool' + (scene.tool ? ' tool-' + scene.tool : ''),  // v0.4.3: 도구별 크기 보정용
         });
         tool.style.left = '18%';
         tool.style.top = '22%';
@@ -653,7 +661,11 @@
       shell(el, scene, scene.title, function (body) {
         var panel = div('closeup-panel' + (scene.skin === 'irritated' ? ' is-irritated' : ''));
         addIrritations(panel, 8);
-        if (scene.surfactant) addSurfactants(panel, 6, surfactantFaces(scene.surfactantMood));
+        if (scene.surfactant) {
+          // v0.4.3: Page 5 계면이 — 더 작게 + 물속에 둥둥 떠다니는 floating (판정과 무관)
+          var closeSurf = addSurfactants(panel, 5, surfactantFaces(scene.surfactantMood));
+          closeSurf.forEach(function (s) { s.classList.add('mood-float'); });
+        }
 
         body.appendChild(panel);
         body.appendChild(makeHint(CFG.texts.hints.tapNext));
@@ -861,12 +873,18 @@
 
   // 계면이: outer(위치·씻김) + inner(감정 모션·이미지) 래퍼 구조 (v0.4.1)
   //   faceList: 표정 변형 이미지 경로 배열(없으면 기본 단일). 인스턴스마다 무작위 선택 (v0.4.2)
-  function addSurfactants(parent, n, faceList) {
+  //   avoidFace: true 면 아기 얼굴(상단) 영역을 피해 몸(팔·배·다리) 주변에만 배치 (v0.4.3)
+  function addSurfactants(parent, n, faceList, avoidFace) {
     var arr = [];
     for (var i = 0; i < n; i++) {
       var wrap = div('surfactant');
-      wrap.style.left = (14 + Math.random() * 68) + '%';
-      wrap.style.top = (14 + Math.random() * 66) + '%';
+      if (avoidFace) {
+        wrap.style.left = (16 + Math.random() * 66) + '%';   // 16~82%
+        wrap.style.top  = (48 + Math.random() * 40) + '%';   // 48~88% (얼굴 아래 몸통·다리)
+      } else {
+        wrap.style.left = (14 + Math.random() * 68) + '%';
+        wrap.style.top  = (14 + Math.random() * 66) + '%';
+      }
       var src = (faceList && faceList.length)
         ? faceList[Math.floor(Math.random() * faceList.length)]
         : CFG.assets.surfactant;
@@ -898,6 +916,7 @@
     surfEls.forEach(function (s, i) {
       if (i < washed && !s.classList.contains('is-washed')) {
         s.classList.add('is-washed');
+        sfx('splash');                      // v0.4.3: 계면이 씻김(맞을 때) 효과음
         if (washFaceSrc) {
           var img = s.querySelector('img');
           if (img) img.src = washFaceSrc;   // gyemeon6-sad 로 표정 변경 후 그대로 씻겨 내려감
@@ -908,7 +927,11 @@
   // v0.3.3: 문지를수록 계면이가 하나씩 생겨나는 연출 (진행도 r 만큼 표시)
   function revealSurfactants(surfEls, r) {
     var shown = Math.round(surfEls.length * clamp01(r));
-    surfEls.forEach(function (s, i) { s.classList.toggle('is-shown', i < shown); });
+    surfEls.forEach(function (s, i) {
+      var was = s.classList.contains('is-shown');
+      s.classList.toggle('is-shown', i < shown);
+      if (!was && i < shown) sfx('pop');    // v0.4.3: 계면이 등장 효과음
+    });
   }
   // v0.4.1: 샤워 물줄기(아래로 흐르는 물방울) — 장식용, 드래그 방해 없음
   function addWaterFlow(stage, n) {

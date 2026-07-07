@@ -11,6 +11,30 @@
 
 ---
 
+## [v0.4.3-beta] - 2026-07-07
+### UI/연출 개선 + 효과음(SFX) 추가 (beta 저장소)
+디자인·연출(UI/UX)만 개선. 게임 로직·판정·점수·타이밍·자동 진행·Scene 순서·관리자 기능은 불변.
+
+### Changed
+- **아기 밑 게이지바(`.rub-meter`) 숨김**: 화면에서 완전히 안 보이게 `display:none`(관련 로직/요소는 유지).
+- **계면이 약 25% 축소**: `.surfactant` 크기 축소(판정과 무관), 모바일/PC 자연스러운 크기.
+- **계면이 배치 개선**: 아기 **얼굴 영역을 피해 몸(팔·배·다리) 주변에만** 생성(`addSurfactants(...,avoidFace)`,
+  top 48~88%). 개수 `config.gauge.surfactantCount` **6개(8→6)** 로 축소 → 더 깔끔.
+- **Page 4(경고) 아기 얼굴 위 빨간 원 제거**: `addIrritations` 호출 삭제(baby-sad 이미지에 이미 발진 포함).
+- **샤워기 약 25% 확대**: 도구별 클래스 `tool-shower` 로 샤워기만 크게(선명), 위치·씻김 애니메이션 불변.
+- **Page 5(계면활성제 설명) 계면이 floating**: 더 작게 + `germFloat`(위아래 부드러운 이동 + 약간의 좌우
+  흔들림, easing, 과하지 않은 속도). 인스턴스별 delay 로 자연스럽게 분산. 판정 영향 없음.
+
+### Added — 효과음(SFX)
+- `js/sfx.js`: **Web Audio 합성** 기반 가볍고 귀여운 효과음(무료·무설치). `config.sfx`(enabled/volume/files).
+  - 버튼 클릭 / Scene 시작 / 계면이 등장(pop) / 계면이 씻김(splash) / 샤워 물줄기(water) / 물방울(drip) /
+    성공(success) / 경고·실패(warn) / 완료(complete).
+  - 볼륨 기본 `0.35`(과하지 않게), 첫 제스처에서 오디오 컨텍스트 활성화, 전부 try/catch(게임 영향 0).
+- `assets/sounds/` 구조 + README: 실제 음원으로 교체하려면 파일을 넣고 `config.sfx.files` 에 경로 연결.
+- PWA precache 에 `js/sfx.js` 추가, 캐시 버전 `eslo-game-v0.4.3-beta`.
+
+---
+
 ## [v0.4.2-beta] - 2026-07-07
 ### 실제 디자인 에셋(아기·계면이) 적용 (beta 저장소)
 placeholder(SVG)로 그리던 아기·계면이를 새로 받은 `1x` PNG 에셋으로 교체. **이미지 리소스만 교체**하며

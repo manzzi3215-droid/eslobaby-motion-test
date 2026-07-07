@@ -1377,3 +1377,32 @@ button.pdot.is-clickable:active { transform: scale(0.9); }
 @media (orientation: portrait) {
   .child-body { width: clamp(178px, 46vw, 240px); }
 }
+
+/* =============================================================================
+ * ★ v0.4.3-beta — 게이지바 숨김 · 계면이 축소/배치 · 샤워기 확대 · Page5 floating
+ * ========================================================================== */
+
+/* 1) 아기 밑 게이지바(rub-meter) 완전 숨김 — 관련 로직/요소는 유지, UI만 숨김 */
+.rub-meter { display: none !important; }
+
+/* 2) 계면이 전체 약 25% 축소 (판정과 무관, 겹침 완화) */
+.surfactant { width: clamp(26px, 5.2vw, 40px); height: clamp(26px, 5.2vw, 40px); }
+
+/* 6) 샤워기만 약 25% 확대 (위치·씻김 애니메이션은 그대로) */
+.drag-tool.tool-shower { width: clamp(128px, 20vw, 188px); height: clamp(128px, 20vw, 188px); }
+
+/* 7) Page 5(계면활성제 설명) 계면이 — 더 작게 + 물속에 둥둥 떠다니는 floating */
+.surfactant.mood-float { width: clamp(22px, 4.4vw, 34px); height: clamp(22px, 4.4vw, 34px); }
+.surfactant.mood-float .surfactant-inner { animation: germFloat 3.4s ease-in-out infinite; }
+@keyframes germFloat {
+  0%, 100% { transform: translateY(0)    translateX(0)    rotate(-3deg); }
+  25%      { transform: translateY(-5px) translateX(2px)  rotate(2deg); }
+  50%      { transform: translateY(-2px) translateX(-2px) rotate(3deg); }
+  75%      { transform: translateY(-6px) translateX(1px)  rotate(-2deg); }
+}
+
+@media (orientation: portrait) {
+  .surfactant { width: clamp(26px, 8vw, 40px); height: clamp(26px, 8vw, 40px); }
+  .surfactant.mood-float { width: clamp(22px, 6.4vw, 34px); height: clamp(22px, 6.4vw, 34px); }
+  .drag-tool.tool-shower { width: clamp(112px, 33vw, 165px); height: clamp(112px, 33vw, 165px); }
+}
