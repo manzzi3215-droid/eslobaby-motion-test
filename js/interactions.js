@@ -16,6 +16,9 @@
    *   @param {HTMLElement} p.stage     좌표 기준이 되는 무대
    *   @param {Function}    p.onProgress(ratio 0~1)
    *   @param {Function}    p.onComplete()
+   *   @param {Object}      [p.options]  — Input 드라이버가 주입하는 튜닝값(선택).
+   *                        값이 없으면 아래 기존 기본값을 그대로 사용 → 동작 불변.
+   *                        { completeThreshold, fallbackMs, targetDistance }
    * @returns {Function} cleanup()  — 장면 전환 시 리스너 해제용
    */
   function makeRubbable(p) {
@@ -23,10 +26,12 @@
     var progress = 0;
     var completed = false;
     var lastX = null, lastY = null;
-    var threshold = CFG.options.dragThreshold;
+    // v0.5.0 Phase 0: 값 출처만 options 로 확장. 미지정 시 기존 기본값과 동일.
+    var opt = p.options || {};
+    var threshold = opt.completeThreshold != null ? opt.completeThreshold : CFG.options.dragThreshold;
 
     // 문지른 거리를 진행도로 환산할 때 기준이 되는 총 거리(px)
-    var TARGET_DISTANCE = 900;
+    var TARGET_DISTANCE = opt.targetDistance != null ? opt.targetDistance : 900;
 
     function stageRect() { return p.stage.getBoundingClientRect(); }
 
@@ -93,7 +98,8 @@
     p.tool.addEventListener('pointercancel', onUp);
 
     // 현장 안전장치: 일정 시간 조작이 없어도 자동 완료
-    var fallback = setTimeout(complete, CFG.timings.dragFallback);
+    var fallbackMs = opt.fallbackMs != null ? opt.fallbackMs : CFG.timings.dragFallback;
+    var fallback = setTimeout(complete, fallbackMs);
 
     return function cleanup() {
       clearTimeout(fallback);

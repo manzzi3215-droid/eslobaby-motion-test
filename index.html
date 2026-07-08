@@ -33,11 +33,13 @@
   <div id="app"></div>
 
   <!-- 스크립트 로드 순서 중요:
-       config → components → scenes → interactions → analytics → game → admin → main -->
+       config → components → scenes → interactions → input → analytics → sfx → game → admin → main
+       (input.js 는 interactions.js 뒤, game.js 앞이어야 함) -->
   <script src="config.js"></script>
   <script src="js/components.js"></script>
   <script src="js/scenes.js"></script>
   <script src="js/interactions.js"></script>
+  <script src="js/input.js"></script>
   <script src="js/analytics.js"></script>
   <script src="js/sfx.js"></script>
   <script src="js/game.js"></script>

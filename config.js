@@ -189,6 +189,24 @@ window.ESLO_CONFIG = {
     stepNavigationEnabled: true,
   },
 
+  /* --- 입력(Input) 드라이버 (v0.5.0-motion-test, Phase 0) ---------------
+   * 장면 진행도(0~1)를 만드는 입력 방식. 기본은 pointer(터치/마우스 드래그).
+   * 아래 기본값은 기존 동작과 100% 동일하도록 맞춰 두었습니다.
+   * (이 블록을 지우거나 mode 를 그대로 두면 기존과 완전히 동일하게 동작)
+   *   - mode              : 'pointer' (후속: 'motion' 등을 Input.register 로 추가)
+   *   - completeThreshold : 완료 판정 진행도  (= 기존 options.dragThreshold 1.0)
+   *   - fallbackMs        : 무조작 자동 완료  (= 기존 timings.dragFallback 9000)
+   *   - pointer.targetDistance : 100% 도달까지 문지르는 총 거리(px, 기존 900)
+   * ------------------------------------------------------------------- */
+  input: {
+    mode: 'pointer',
+    completeThreshold: 1.0,
+    fallbackMs: 9000,
+    pointer: {
+      targetDistance: 900,
+    },
+  },
+
   /* --- 민감/자극 게이지 색 --------------------------------------------
    * 게이지 값(0~1)에 따라 아래 색을 순서대로 보간합니다.
    * v0.2.5 게이지 규칙: 0% → 파랑 / 50% → 주황 / 100% → 빨강

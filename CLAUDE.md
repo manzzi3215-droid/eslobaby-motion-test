@@ -49,8 +49,9 @@
 |---|---|
 | `config.js` | 문구, 이미지 경로, 타이밍, 옵션 관리 |
 | `js/scenes.js` | 게임 단계 흐름 관리 |
-| `js/game.js` | 장면 렌더링, 자동 진행, 게이지, 인터랙션 관리 |
-| `js/interactions.js` | 드래그/터치 처리 |
+| `js/game.js` | 장면 렌더링, 자동 진행, 게이지, 인터랙션 관리 (`renderDrag`는 `Input.createDriver` 사용) |
+| `js/interactions.js` | 드래그/터치(문지르기) 처리 = PointerDriver 구현 |
+| `js/input.js` | 입력 드라이버 레지스트리 (v0.5.0 Phase 0) — 진행도 입력 방식 추상화 |
 | `js/components.js` | placeholder/SVG 컴포넌트 관리 |
 | `css/theme.css` | 색상, 폰트, 공통 디자인 변수 |
 | `css/game.css` | 게임 화면 레이아웃 및 애니메이션 |
@@ -66,6 +67,22 @@
 | `js/share.js` | 공유 페이지 로직 (v0.2.6~) |
 | `manifest.webmanifest` / `sw.js` | PWA 매니페스트 · 서비스워커(기본 캐싱) (v0.2.6~) |
 | `.github/workflows/pages.yml` | GitHub Actions Pages 자동 배포 |
+
+### 입력 드라이버 구조 (v0.5.0 Phase 0 — 모션인식 확장 준비)
+
+`renderDrag`는 입력을 직접 처리하지 않고 `Input.createDriver(ctx)`로 위임합니다.
+`ctx = { scene, tool, body, stage, onProgress, onComplete }` → 드라이버가 진행도(0~1)를 만들어
+`onProgress`/`onComplete`를 호출합니다.
+
+```
+config.input(mode) → Input.createDriver → _drivers[mode] → cleanup
+  기본 'pointer' = Interactions.makeRubbable (기존 드래그 로직, 동작 불변)
+```
+
+- **동작은 기존과 100% 동일**. 기능 추가 아님(모션/QR/NFC 미구현 — 후속 Phase).
+- 후속 확장: `Input.register('motion', factory)` 추가만으로 `renderDrag` 변경 없이 입력 방식 추가.
+- 튜닝값은 `config.js`의 `input` 블록에서 관리(`completeThreshold`/`fallbackMs`/`pointer.targetDistance`).
+- 안전망: `config.input`/`input.js`/등록 mode가 없어도 기존 pointer 동작으로 폴백.
 
 ## 핵심 유지 원칙
 

@@ -77,7 +77,8 @@ eslobaby-game/
 ├── js/
 │   ├── components.js   Placeholder/버튼/멘트 등 재사용 컴포넌트
 │   ├── scenes.js       ⭐ 장면(Scene)의 순서·타입·문구 데이터
-│   ├── interactions.js 드래그/터치(문지르기) 처리
+│   ├── interactions.js 드래그/터치(문지르기) 처리 (PointerDriver)
+│   ├── input.js        ⭐ 입력 드라이버 레지스트리 (v0.5.0 Phase 0)
 │   ├── game.js         게임 엔진 (장면 전환·렌더링)
 │   ├── main.js         초기화 진입점
 │   ├── qrcode.js       외부 라이브러리 없는 QR 코드 생성기 (v0.2.6~)
@@ -91,6 +92,23 @@ eslobaby-game/
 ├── CHANGELOG.md        버전별 변경 기록
 └── README.md           이 문서
 ```
+
+### 입력 드라이버(Input Driver) 구조 (v0.5.0 Phase 0)
+
+모션인식 연구를 위한 **구조적 준비 단계**입니다. "장면 진행도(0~1)를 무엇이 만드는가"를
+드라이버로 추상화했습니다. **동작은 기존과 100% 동일**하며, 기본 입력은 `pointer`(터치/마우스 드래그)입니다.
+
+```
+config.input(mode='pointer')
+   ▼
+game.renderDrag → Input.createDriver(ctx) → _drivers['pointer'] → Interactions.makeRubbable
+```
+
+- `js/input.js` : 레지스트리(`Input.register` / `Input.createDriver`) + PointerDriver 등록.
+- `js/interactions.js` : 기존 `makeRubbable` 로직 유지, 튜닝값만 `options`로 주입받도록 확장(미지정 시 기존 기본값).
+- `config.js` → `input` : `mode` / `completeThreshold`(1.0) / `fallbackMs`(9000) / `pointer.targetDistance`(900). 모두 기존값과 동일.
+- **확장점**: 후속 단계에서 `Input.register('motion', …)` 한 줄만 추가하면 `renderDrag` 변경 없이 새 입력 방식이 붙습니다.
+- **안전망**: `config.input` 없어도, 미등록 mode여도, `input.js` 미로드여도 기존 pointer 동작으로 폴백.
 
 **설계 핵심**: UI(그리기)와 게임 로직을 분리하고, 이미지·텍스트·색상·타이밍을
 모두 외부(config.js / theme.css / scenes.js)에서 교체할 수 있게 구성했습니다.
@@ -214,7 +232,8 @@ eslobaby-game/
 | 색상 톤(블루/민트) 변경 | `css/theme.css` → `:root` 변수 |
 | 글자 크기·버튼 크기 | `css/theme.css` → `--fs-*`, `--btn-min-h` |
 | 장면 순서 추가/변경 | `js/scenes.js` (배열 수정) |
-| 인터랙션 동작(문지르기) 로직 | `js/interactions.js` |
+| 인터랙션 동작(문지르기) 로직 | `js/interactions.js` (PointerDriver) |
+| 입력 방식(드라이버) 선택·확장 | `config.js` → `input` / `js/input.js` (레지스트리) |
 | Placeholder 일러스트(SVG) 모양 | `js/components.js` → `SHAPES` |
 | 장면 그리는 방식(렌더링) | `js/game.js` |
 | 애니메이션 | `css/game.css` (`@keyframes`) |

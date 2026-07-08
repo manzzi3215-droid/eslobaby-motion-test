@@ -11,6 +11,30 @@
 
 ---
 
+## [v0.5.0-motion-test] - 2026-07-08 (Phase 0: Input Driver 리팩토링)
+### 입력(Input) 드라이버 레지스트리 도입 — 구조만 개선, 동작 100% 동일
+모션인식 연구를 위한 **확장 준비 단계**. "장면 진행도(0~1)를 무엇이 만드는가"를 드라이버로
+추상화했습니다. **게임 플레이·애니메이션·거품·계면이·Scene·게이지·판정·타이밍·효과음·자동 진행·
+관리자 기능은 일절 변경하지 않았습니다.** 기능 추가 없음(모션/QR/NFC 미구현).
+
+### Added
+- `js/input.js` (신규): 입력 드라이버 레지스트리 `Input.register` / `Input.createDriver` + PointerDriver 등록.
+  - 계약: `(ctx) => cleanup`, `ctx = { scene, tool, body, stage, onProgress, onComplete, options }`.
+  - 3중 안전망: ① `config.input` 없어도 동작 ② 미등록 mode → pointer 폴백 ③ `window.Input` 미로드 → `game.js`가 기존 `makeRubbable` 직접 호출.
+- `config.js` → `input` 블록: `mode:'pointer'` / `completeThreshold:1.0` / `fallbackMs:9000` / `pointer.targetDistance:900`. **전부 기존값과 동일**.
+
+### Changed
+- `js/interactions.js`: `makeRubbable`가 튜닝값(`completeThreshold`/`fallbackMs`/`targetDistance`)을 `options`에서 읽도록 확장. **미지정 시 기존 기본값(1.0/9000/900) 그대로 → 드래그 감각 불변**.
+- `js/game.js` `renderDrag`: 드라이버 생성을 `Interactions.makeRubbable` 직접 호출 → `Input.createDriver(driverCtx)`로 전환(+파일 단위 폴백). 진행/완료 콜백 본문은 이동 없이 동일.
+- `index.html`: `js/input.js` 로드 추가(interactions.js 뒤, game.js 앞).
+
+### Verified
+- 헤드리스 DOM(jsdom)로 실 스크립트 부팅 — 게이트+Scene 1~10 전부 렌더, **콘솔 에러 0**.
+- 드래그 수치 파리티: 900px 문지름 → 진행도 곡선·완료 시점이 기존 경로와 **완전히 동일**.
+- drag 장면이 실제로 `Input.createDriver → pointer → makeRubbable` 경로 사용 확인. `node --check` 전 파일 통과.
+
+---
+
 ## [v0.5.0-motion-test] - 2026-07-07
 ### 모션인식 연구용 실험 저장소 분리 (eslobaby-motion-test)
 `eslobaby-game-beta`(v0.4.5-beta)를 그대로 복제해 별도 GitHub 저장소 `eslobaby-motion-test` 로 분리.

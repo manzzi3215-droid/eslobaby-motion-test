@@ -622,8 +622,10 @@
           return level;
         }
 
-        var cleanup = window.Interactions.makeRubbable({
-          tool: tool, body: childBody, stage: stage,
+        // v0.5.0 Phase 0: 입력을 Input 드라이버로 추상화. 아래 콜백(진행/완료) 본문은
+        //   기존과 동일하며, "진행도를 무엇이 만드는가"만 드라이버가 담당한다.
+        var driverCtx = {
+          scene: scene, tool: tool, body: childBody, stage: stage,
           onProgress: function (r) {
             fill.style.width = (r * 100) + '%';
             setFoam(bubbles, isRinse ? (1 - r) : r);   // 거품: 생성(foam) 또는 씻김(rinse)
@@ -654,7 +656,15 @@
             }
             proceed();
           },
-        });
+        };
+        // Input 레지스트리로 드라이버 생성 (mode=pointer 기본 → 동작 동일).
+        // Input 미로드 시 기존 makeRubbable 직접 사용(파일 단위 폴백).
+        var cleanup = window.Input
+          ? window.Input.createDriver(driverCtx)
+          : window.Interactions.makeRubbable({
+              tool: tool, body: childBody, stage: stage,
+              onProgress: driverCtx.onProgress, onComplete: driverCtx.onComplete,
+            });
         cleanups.push(cleanup);
       });
     });
