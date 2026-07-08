@@ -14,10 +14,13 @@
 
 ## 현재 버전
 
-**v0.4.5-beta** (버전은 `config.js`의 `meta.version` 및 `CHANGELOG.md`와 항상 일치시킬 것)
+**v0.5.0-motion-test** (버전은 `config.js`의 `meta.version` 및 `CHANGELOG.md`와 항상 일치시킬 것)
+※ 이 저장소(`eslobaby-motion-test`)는 **모션인식 연구용 실험본**입니다. `eslobaby-game-beta`(v0.4.5-beta)를
+  그대로 복제해 만든 별도 저장소이며, 운영본(`eslobaby-game2`)·beta 와 분리됩니다. **아직 기능 변경 없음**(버전/URL 표기만).
+  모션 실험(DeviceMotion·MediaPipe 등)은 이 저장소에서만 진행하세요.
 ※ 폰트는 **Jua**(Google Fonts, index/share 로드). 로고는 투명 PNG(흰 배경 flood-fill 제거).
   제품 3종은 가로 일렬(`buildProductHero`). 문구 줄바꿈은 config `\n`.
-※ 이 저장소는 운영본과 분리된 **beta 미러**입니다.
+※ (원본 계보) 운영본과 분리된 **beta 미러**에서 복제됨.
 - STEP 화면 민감도 게이지는 사용자 화면에 미표시(내부 로직/`buildGauge`는 유지).
 - STEP 연출: 제품(바디워시/이슬로) 문지르면 거품+계면이 동시 생성(`surfactantGrow`).
   STEP1 샤워는 거품만 제거(계면이 잔류), STEP3 샤워는 거품+계면이 모두 제거.

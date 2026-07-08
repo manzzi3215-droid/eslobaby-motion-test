@@ -1,10 +1,13 @@
 # 이슬로 베이비 미니게임 (프로토타입)
 
 베이비페어 현장 고객 참여용 플래시형 미니게임.
-현재 버전은 **v0.4.5-beta — 로고 배경 제거·제품 가로 배치·둥근 폰트(Jua) (beta 미러)**입니다.
+현재 버전은 **v0.5.0-motion-test — 모션인식 연구용 실험 저장소**입니다.
 브랜드 표기는 `eslo`(영문) / `이슬로`(한글)로 통일합니다.
 
-> ⚙️ 이 저장소는 운영본(`eslobaby-game2`)과 분리된 **beta 미러**(원격: `eslobaby-game-beta`)입니다.
+> 🧪 이 저장소(`eslobaby-motion-test`)는 **모션인식 연구용 실험본**으로, `eslobaby-game-beta`(v0.4.5-beta)를
+> 그대로 복제해 만든 별도 저장소입니다. 운영본(`eslobaby-game2`)·beta 와 분리되어 있으며, 아직 기능 변경은 없습니다.
+
+> ⚙️ (원본 계보) 운영본(`eslobaby-game2`) / beta 미러(`eslobaby-game-beta`).
 > v0.4.1-beta: UI/UX Polish — 화면 전환(페이드+슬라이드), 계면이 감정 모션(playful/clinging/anxious/panic),
 > 부드러운 거품·샤워 물줄기, 경고 화면 연출(엣지 글로우/흔들림), 성공 문구 팝. (기능·관리자 기능 불변)
 > (v0.4.0-beta: 관리자 대시보드 · 플레이 분석 / v0.3.3-beta: 거품+계면이 동시 생성·`Page N/10`)
@@ -17,9 +20,9 @@
 
 ## 0. 온라인 접속 · 공유 (v0.2.6~)
 
-### 접속 링크
-- **게임 바로가기**: https://manzzi3215-droid.github.io/eslobaby-game2/
-- **공유용 QR 페이지**: https://manzzi3215-droid.github.io/eslobaby-game2/share.html
+### 접속 링크 (모션인식 실험본)
+- **게임 바로가기**: https://manzzi3215-droid.github.io/eslobaby-motion-test/
+- **공유용 QR 페이지**: https://manzzi3215-droid.github.io/eslobaby-motion-test/share.html
   - 화면에 접속 QR·URL·"게임 바로가기" 버튼이 표시됩니다. 회사 내부 공유·현장 테스트·모바일 안내용.
   - QR은 **외부 라이브러리 없이** 페이지에서 실시간 생성됩니다(오프라인 OK).
     실제 QR 이미지를 쓰려면 `assets/qr/share-qr.png` 를 넣으면 자동으로 그 이미지로 교체됩니다.

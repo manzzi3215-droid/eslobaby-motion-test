@@ -11,6 +11,19 @@
 
 ---
 
+## [v0.5.0-motion-test] - 2026-07-07
+### 모션인식 연구용 실험 저장소 분리 (eslobaby-motion-test)
+`eslobaby-game-beta`(v0.4.5-beta)를 그대로 복제해 별도 GitHub 저장소 `eslobaby-motion-test` 로 분리.
+운영본(`eslobaby-game2`)·beta 는 변경하지 않았습니다. **기능 구현은 없음** — 버전/URL/배포 설정만 조정.
+
+### Changed
+- `config.meta.version` → `v0.5.0-motion-test`, `sw.js` 캐시명 → `eslo-game-v0.5.0-motion-test`
+- `js/share.js` `GAME_URL` 및 README 접속 링크 → 새 Pages URL(`.../eslobaby-motion-test/`)
+- `.github/workflows/pages.yml` `configure-pages` 에 `enablement: true` 추가 — 새 저장소 Pages 자동 활성화
+- README/CLAUDE.md 실험 저장소 안내 추가
+
+---
+
 ## [v0.4.5-beta] - 2026-07-07
 ### 로고 배경 제거 · 제품 가로 배치 · 타이포/폰트 개선 (beta 저장소)
 디자인/UI만 개선. 게임 로직·판정·점수·자동 진행·타이밍·Scene 순서·관리자 기능 불변.

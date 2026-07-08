@@ -10,7 +10,7 @@
   'use strict';
 
   // 게임 배포 URL (GitHub Pages). 다른 곳에 배포하면 이 값만 바꾸면 됩니다.
-  var GAME_URL = 'https://manzzi3215-droid.github.io/eslobaby-game2/';
+  var GAME_URL = 'https://manzzi3215-droid.github.io/eslobaby-motion-test/';
 
   // 교체용 실제 QR 이미지 경로 (파일이 있으면 생성 QR 대신 이 이미지를 사용)
   var QR_IMAGE = 'assets/qr/share-qr.png';
