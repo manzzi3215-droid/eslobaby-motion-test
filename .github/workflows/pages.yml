@@ -26,8 +26,6 @@ jobs:
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
-        with:
-          enablement: true   # 새 저장소에서 Pages(GitHub Actions 소스)를 자동 활성화
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
